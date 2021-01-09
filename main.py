@@ -41,7 +41,7 @@ def calculateReview(testVector,wordProbability):
 #The first "n" words in the vocabulary will be skipped
 n = 80
 #Every word after "m+n" won't be checked.
-m = 500
+m = 470
 #Number of positive and negative reviews
 numberOfNeg = 12500
 numberOfPos = 12500
@@ -82,9 +82,9 @@ for test in testReviews:
             testVector.append(0)
     posReviewProbability = calculateReview(testVector,posWordProbabilities)
     negReviewProbability = calculateReview(testVector,negWordProbabilities)
-    if(posReviewProbability>negReviewProbability):
+    if(posReviewProbability<negReviewProbability):
         posRev+=1
     numberOfTests+=1
 
-print(posRev)
+print(posRev/125,"%")
     
