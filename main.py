@@ -27,10 +27,21 @@ def trainData(trainVector,wordProbability,n,m):
         currProbability = (numberOfAppearances + 1)/(numberOfPos + 2)
         wordProbability.append(currProbability)
 
+def calculateReview(testVector,wordProbability):
+
+    probability=1
+    for x in testVector:
+        if(testVector[x]==1):
+            probability*= wordProbability[x]
+        elif(testVector[x]==0):
+            probability*= 1 - wordProbability[x]
+    probability *= 0.5
+    return probability
+
 #The first "n" words in the vocabulary will be skipped
-n = 40
+n = 80
 #Every word after "m+n" won't be checked.
-m = 400
+m = 500
 #Number of positive and negative reviews
 numberOfNeg = 12500
 numberOfPos = 12500
@@ -52,14 +63,28 @@ print("Number of vocabulary words: ",len(trainPosVectors[0]))
 trainData(trainPosVectors,posWordProbabilities,n,m)
 trainData(trainNegVectors,negWordProbabilities,n,m)
 
-print("Number of positive reviews probabilities: ",len(posWordProbabilities))
-print("Number of negative reviews probabilities: ",len(negWordProbabilities))
 
-#for prob in posWordProbabilities:
-   # print(prob)
-
+#TESTING
 testDataVocab = open("aclImdb/test/labeledBow.feat","r")
 testReviews = testDataVocab.readlines();
-numberOfTests = 1000
+numberOfTests = 0
+posRev = 0
+negRev = 0
 
-#for test in numberOfTests:
+for test in testReviews:
+    if(numberOfTests==25000):
+        break
+    testVector = []
+    for i in range(n,m+n):
+        if(" "+str(i)+":" in test):
+            testVector.append(1)
+        else:
+            testVector.append(0)
+    posReviewProbability = calculateReview(testVector,posWordProbabilities)
+    negReviewProbability = calculateReview(testVector,negWordProbabilities)
+    if(posReviewProbability>negReviewProbability):
+        posRev+=1
+    numberOfTests+=1
+
+print(posRev)
+    
