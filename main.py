@@ -20,18 +20,26 @@ def generateVectors(reviews,n,m):
 n = 40
 #Every word after "m+n" won't be checked.
 m = 400
+
+#Number of positive and negative reviews
 numberOfNeg = 12500
 numberOfPos = 12500
 
+#Loads the training token file and splits the reviews into lines
 trainDataVocab = open("aclImdb/train/labeledBow.feat","r")
+reviews = trainDataVocab.readlines();
+
+#Positive and negative review vectors
 trainPosVectors = []
 trainNegVectors = []
-reviews = trainDataVocab.readlines();
+
+#Filling up the two vectors with the review tokens
 generateVectors(reviews,n,m)
 
 print(len(trainNegVectors))
 print(len(trainPosVectors))
 
-#for vector in trainPosVectors:
- #   for x in vector:
-  #      for i 
+for vector in trainPosVectors:
+    for x in vector:
+        for i in range(trainPosVectors):
+            pass
