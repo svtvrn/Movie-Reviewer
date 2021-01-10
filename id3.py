@@ -124,7 +124,6 @@ trainVectors = []
 generateVectors(reviews,n,m)
 
 #True equals a good review, False equals a bad review
-defaultClf = True
 print("TRAIN START")
-id3Tree = trainDataId3(trainVectors,m,defaultClf)
+id3Tree = trainDataId3(trainVectors,m,True)
 print(id3Tree[0])
