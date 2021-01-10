@@ -48,7 +48,7 @@ def checkAccuracy(posReview,negReview,score):
 #The first "n" words in the vocabulary will be skipped
 n = 140
 #Every word after "m+n" won't be checked.
-m = 450
+m = 620
 #Loads the training token file and splits the reviews into lines
 trainDataVocab = open("aclImdb/train/labeledBow.feat","r")
 reviews = trainDataVocab.readlines();
