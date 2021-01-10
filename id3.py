@@ -66,7 +66,6 @@ def attributeProbabilty(vectors,x,value):
     for vector in vectors:
         if(vector[x]==value):
             numberOfAppearances+=1
-
     return numberOfAppearances/len(vectors)
 
 def bestAttributeSelection(vectors,m):
@@ -118,7 +117,7 @@ C=0.5
 entropy = -C*np.log2(C) - C*np.log2(C)
 
 trainDataVocab = open("aclImdb/train/labeledBow.feat","r")
-reviews = trainDataVocab.readlines();
+reviews = trainDataVocab.readlines()
 #Size m+1, where m vocabulary size and plus one for the review score at index 0
 trainVectors = []
 generateVectors(reviews,n,m)
@@ -126,4 +125,9 @@ generateVectors(reviews,n,m)
 #True equals a good review, False equals a bad review
 print("TRAIN START")
 id3Tree = trainDataId3(trainVectors,m,True)
-print(id3Tree[0])
+print(len(id3Tree))
+
+#TESTING
+testDataVocab = open("aclImdb/test/labeledBow.feat","r")
+testReviews = testDataVocab.readlines()
+accuracy = 0

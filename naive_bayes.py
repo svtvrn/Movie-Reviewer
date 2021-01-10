@@ -51,7 +51,7 @@ n = 75
 m = 1000
 #Loads the training token file and splits the reviews into lines
 trainDataVocab = open("aclImdb/train/labeledBow.feat","r")
-reviews = trainDataVocab.readlines();
+reviews = trainDataVocab.readlines()
 
 #Positive and negative review vectors
 trainPosVectors = []
@@ -68,7 +68,7 @@ trainData(trainNegVectors,negWordProbabilities,n,m)
 
 #TESTING
 testDataVocab = open("aclImdb/test/labeledBow.feat","r")
-testReviews = testDataVocab.readlines();
+testReviews = testDataVocab.readlines()
 accuracy = 0
 
 for test in testReviews:
