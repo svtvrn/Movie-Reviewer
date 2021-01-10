@@ -51,7 +51,6 @@ def calculateConditionalProbability(vectors,x,value,C):
     currentProbability = scoreAppearances/totalAppearances
     return currentProbability*np.log2(currentProbability)
         
-
 def calculateEntropy(vectors,x,value):
     posReviewEntropy = calculateConditionalProbability(vectors,x,value,1)
     negReviewEntropy = calculateConditionalProbability(vectors,x,value,0)
@@ -75,23 +74,33 @@ def bestAttributeSelection(vectors,m):
             maxAttributeGain = x
     return maxAttributeGain
 
-def trainDataId3(vectors,n,m,defaultClf):
+def trainDataId3(vectors,m,defaultClf):
 
     if(vectors==None):
         return defaultClf
     elif(categoriseVectors(vectors)):
-        print("CATEGORISE VECTORS")
         return vectors[0][0]
     elif(m<=0):
         return mostFrequentCategory(vectors)
     else:
-        print("FIND BEST")
         bestAttribute = bestAttributeSelection(vectors,m)
         print(bestAttribute)
+        tree = [bestAttribute]
+        leftSubtreeVector = []
+        rightSubtreeVector = []
+        for vector in vectors:
+            if(vector[bestAttribute]==1):
+                leftSubtreeVector.append(vector)
+            else:
+                rightSubtreeVector.append(vector)
+        leftSubtree = trainDataId3(leftSubtreeVector,m,True)
+        rightSubtree = trainDataId3(rightSubtreeVector,m,False)
+        tree.append(leftSubtree,rightSubtree)
+        return tree
 
 
 #The first "n" words in the vocabulary will be skipped
-n = 45
+n = 40
 #Every word after "m+n" won't be checked.
 m = 50
 #Class probability
