@@ -24,7 +24,7 @@ def trainData(trainVector,wordProbability,n,m):
         for vector in trainVector:
             if(vector[x]==1):
                 numberOfAppearances +=1
-        currProbability = (numberOfAppearances + 1)/(numberOfPos + 2)
+        currProbability = (numberOfAppearances+1)/(numberOfPos+2)
         wordProbability.append(currProbability)
 
 def calculateReview(testVector,wordProbability):
@@ -41,7 +41,7 @@ def calculateReview(testVector,wordProbability):
 #The first "n" words in the vocabulary will be skipped
 n = 80
 #Every word after "m+n" won't be checked.
-m = 470
+m = 500
 #Number of positive and negative reviews
 numberOfNeg = 12500
 numberOfPos = 12500
@@ -83,8 +83,10 @@ for test in testReviews:
     posReviewProbability = calculateReview(testVector,posWordProbabilities)
     negReviewProbability = calculateReview(testVector,negWordProbabilities)
     if(posReviewProbability<negReviewProbability):
+        negRev+=1
+    else:
         posRev+=1
     numberOfTests+=1
 
-print(posRev/125,"%")
-    
+print(negRev)
+print(posRev)
