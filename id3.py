@@ -48,7 +48,12 @@ def calculateConditionalProbability(vectors,x,value,C):
             totalAppearances+=1
             if(score==C):
                 scoreAppearances+=1
-    currentProbability = scoreAppearances/totalAppearances
+    if(totalAppearances>0):
+        currentProbability = scoreAppearances/totalAppearances
+    else:
+        currentProbability = 0.001
+    if(currentProbability<=0):
+        currentProbability = 0.001
     return currentProbability*np.log2(currentProbability)
         
 def calculateEntropy(vectors,x,value):
@@ -74,10 +79,10 @@ def bestAttributeSelection(vectors,m):
             maxAttributeGain = x
     return maxAttributeGain
 
-def trainDataId3(vectors,m,defaultClf):
+def trainDataId3(vectors,m,defaultAttr):
 
-    if(vectors==None):
-        return defaultClf
+    if(len(vectors)==0):
+        return defaultAttr
     elif(categoriseVectors(vectors)):
         return vectors[0][0]
     elif(m<=0):
@@ -90,17 +95,21 @@ def trainDataId3(vectors,m,defaultClf):
         rightSubtreeVector = []
         for vector in vectors:
             if(vector[bestAttribute]==1):
+                vector.pop(bestAttribute)
                 leftSubtreeVector.append(vector)
             else:
+                vector.pop(bestAttribute)
                 rightSubtreeVector.append(vector)
-        leftSubtree = trainDataId3(leftSubtreeVector,m,True)
-        rightSubtree = trainDataId3(rightSubtreeVector,m,False)
-        tree.append(leftSubtree,rightSubtree)
+        print(len(leftSubtreeVector))
+        print(len(rightSubtreeVector))
+        leftSubtree = trainDataId3(leftSubtreeVector,m-1,bestAttribute)
+        rightSubtree = trainDataId3(rightSubtreeVector,m-1,bestAttribute)
+        tree.append(leftSubtree)
+        tree.append(rightSubtree)
         return tree
 
-
 #The first "n" words in the vocabulary will be skipped
-n = 40
+n = 90
 #Every word after "m+n" won't be checked.
 m = 50
 #Class probability
@@ -117,4 +126,5 @@ generateVectors(reviews,n,m)
 #True equals a good review, False equals a bad review
 defaultClf = True
 print("TRAIN START")
-id3Tree = trainDataId3(trainVectors,n,m,defaultClf)
+id3Tree = trainDataId3(trainVectors,m,defaultClf)
+print(id3Tree[0])
