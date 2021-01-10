@@ -48,7 +48,7 @@ def checkAccuracy(posReview,negReview,score):
 #The first "n" words in the vocabulary will be skipped
 n = 80
 #Every word after "m+n" won't be checked.
-m = 580
+m = 620
 #Number of positive and negative reviews
 numberOfNeg = 12500
 numberOfPos = 12500
