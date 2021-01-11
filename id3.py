@@ -87,7 +87,6 @@ def calculateInfoGain(vectors,x):
 def bestAttributeSelection(vectors,attr):
     maxAttribute = 0
     maxInfoGain  = 0
-    print(attr)
     for x in range(1,attr):
         infoGain = calculateInfoGain(vectors,x)
         if(infoGain>maxInfoGain):
@@ -104,10 +103,26 @@ def trainDataId3(vectors,attr,defaultCategory):
     elif(len(attr)==0):
         return mostFrequentCategory(vectors)
     else:
-        highestIgAttr = bestAttributeSelection(vectors,len(attr))
-        print(highestIgAttr)
+        highestIGAttr = bestAttributeSelection(vectors,len(attr))
+        print('Info gain:',highestIGAttr)
+        tree = [highestIGAttr]
+        leftVectors = []
+        rightVectors = []
+        category = mostFrequentCategory(vectors)
+        for vector in vectors:
+            attrValue = vector.pop(highestIGAttr)
+            if(attrValue == 1):
+                leftVectors.append(vector)
+            else:
+                rightVectors.append(vector)
+        attr.pop(highestIGAttr)
+        leftTree = trainDataId3(leftVectors,attr,category)
+        tree.append(leftTree)
+        rightTree = trainDataId3(rightVectors,attr,category)
+        tree.append(rightTree)
+        return tree
 
-
+        
 #The first "n-1" words in the vocabulary will be skipped
 n = 40
 #Every word after "m+n" won't be checked.
