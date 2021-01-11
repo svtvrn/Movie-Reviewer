@@ -28,17 +28,17 @@ def mostFrequentCategory(vectors):
 
     posCounter = 0
     negCounter = 0
-    for i in range(len(vectors)):
-        if(vectors[i][0]==1):
+    for vector in vectors:
+        if(vector[0]==1):
             posCounter+=1
-        elif(vectors[i][0]==0):
+        elif(vector[0]==0):
             negCounter+=1
     if(posCounter>=negCounter):
         return 1
     else:
         return 0
 
-def calculateConditionalProbability(vectors,x,value,C):
+def calculateCondProbability(vectors,x,value,C):
     currentProbability = 0
     scoreAppearances = 0
     totalAppearances = 0
@@ -56,78 +56,72 @@ def calculateConditionalProbability(vectors,x,value,C):
         currentProbability = 0.001
     return currentProbability*np.log2(currentProbability)
         
-def calculateEntropy(vectors,x,value):
-    posReviewEntropy = calculateConditionalProbability(vectors,x,value,1)
-    negReviewEntropy = calculateConditionalProbability(vectors,x,value,0)
-    return (- posReviewEntropy - negReviewEntropy)
+def calculateCondEntropy(vectors,x,value):
+    posReviewEntropy = calculateCondProbability(vectors,x,value,1)
+    negReviewEntropy = calculateCondProbability(vectors,x,value,0)
+    return ( - posReviewEntropy - negReviewEntropy)
 
-def attributeProbabilty(vectors,x,value):
-    numberOfAppearances = 0
+def calculateInfoGain(vectors,x):
+    #Number of attribute showing up in reviews
+    attrAppearances = 0
+    #Number of positive and negative reviews
+    posReviews = 0
+    negReviews = 0
+    #For each review
     for vector in vectors:
-        if(vector[x]==value):
-            numberOfAppearances+=1
-    return numberOfAppearances/len(vectors)
+        if(vector[x]==1):
+            attrAppearances+=1
+        if(vector[0]==1):
+            posReviews+=1
+        else:
+            negReviews += 1
+    #Percentage of pos and neg reviews to calculate entropy
+    posReviewPerc = posReviews/len(vectors)
+    negReviewPerc = negReviews/len(vectors)
+    #Calculating entropy
+    entropy = -posReviewPerc*np.log2(posReviewPerc) - negReviewPerc*np.log2(negReviewPerc)
+    #Probability of finding and not finding the attribute in a review
+    attrProbability = attrAppearances/len(vectors)
+    return (entropy - attrProbability*calculateCondEntropy(vectors,x,1) - (1-attrProbability)*calculateCondEntropy(vectors,x,0))
 
-def bestAttributeSelection(vectors,m):
-    maxAttributeGain = 0
+def bestAttributeSelection(vectors,attr):
+    maxAttribute = 0
     maxInfoGain  = 0
-    for x in range(1,m+1):
-        infoGain = entropy - attributeProbabilty(vectors,x,1) * calculateEntropy(vectors,x,1) -  attributeProbabilty(vectors,x,0) *  calculateEntropy(vectors,x,0)
+    print(attr)
+    for x in range(1,attr):
+        infoGain = calculateInfoGain(vectors,x)
         if(infoGain>maxInfoGain):
             maxInfoGain = infoGain
-            maxAttributeGain = x
-    return maxAttributeGain
+            maxAttribute = x
+    return maxAttribute
 
-def trainDataId3(vectors,m,defaultAttr):
-
+def trainDataId3(vectors,attr,defaultCategory):
+    
     if(len(vectors)==0):
-        return defaultAttr
+        return defaultCategory
     elif(categoriseVectors(vectors)):
-        return vectors[0][0]
-    elif(m<=0):
+        return  vectors[0][0]
+    elif(len(attr)==0):
         return mostFrequentCategory(vectors)
     else:
-        bestAttribute = bestAttributeSelection(vectors,m)
-        print(bestAttribute)
-        tree = [bestAttribute]
-        leftSubtreeVector = []
-        rightSubtreeVector = []
-        for vector in vectors:
-            if(vector[bestAttribute]==1):
-                vector.pop(bestAttribute)
-                leftSubtreeVector.append(vector)
-            else:
-                vector.pop(bestAttribute)
-                rightSubtreeVector.append(vector)
-        print(len(leftSubtreeVector))
-        print(len(rightSubtreeVector))
-        leftSubtree = trainDataId3(leftSubtreeVector,m-1,bestAttribute)
-        rightSubtree = trainDataId3(rightSubtreeVector,m-1,bestAttribute)
-        tree.append(leftSubtree)
-        tree.append(rightSubtree)
-        return tree
+        highestIgAttr = bestAttributeSelection(vectors,len(attr))
+        print(highestIgAttr)
 
-#The first "n" words in the vocabulary will be skipped
-n = 90
+
+#The first "n-1" words in the vocabulary will be skipped
+n = 40
 #Every word after "m+n" won't be checked.
 m = 50
-#Class probability
-C=0.5
-#Starting entropy
-entropy = -C*np.log2(C) - C*np.log2(C)
+entropy = -0.5*np.log2(0.5) - 0.5*np.log2(0.5)
+attr = []
+for i in range(n,m+n):
+    attr.append(i)
+print(attr)
 
 trainDataVocab = open("aclImdb/train/labeledBow.feat","r")
 reviews = trainDataVocab.readlines()
-#Size m+1, where m vocabulary size and plus one for the review score at index 0
+
 trainVectors = []
 generateVectors(reviews,n,m)
 
-#True equals a good review, False equals a bad review
-print("TRAIN START")
-id3Tree = trainDataId3(trainVectors,m,True)
-print(len(id3Tree))
-
-#TESTING
-testDataVocab = open("aclImdb/test/labeledBow.feat","r")
-testReviews = testDataVocab.readlines()
-accuracy = 0
+trainDataId3(trainVectors,attr,1)
