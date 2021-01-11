@@ -112,25 +112,25 @@ def trainDataId3(vectors,defaultCategory):
     leftVectors = []
     rightVectors = []
     category = mostFrequentCategory(vectors)
-    for vector in vectors:
-        attrValue = vector.pop(highestIGAttr)
-        if(attrValue == 1):
-            leftVectors.append(vector)
-        else:
-            rightVectors.append(vector)
-        vectors.remove(vector)
-    
+    if(highestIGAttr>0):
+        for vector in vectors:
+            attrValue = vector.pop(highestIGAttr)
+            if(attrValue == 1):
+                leftVectors.append(vector)
+            else:
+                rightVectors.append(vector)
+            vectors.remove(vector)
+
     leftTree = trainDataId3(leftVectors,category)
     tree.append(leftTree)
     rightTree = trainDataId3(rightVectors,category)
     tree.append(rightTree)
     return tree
-
         
 #The first "n-1" words in the vocabulary will be skipped
-n = 60
+n = 40
 #Every word after "m+n" won't be checked.
-m = 10
+m = 50
 entropy = -0.5*np.log2(0.5) - 0.5*np.log2(0.5)
 
 trainDataVocab = open("aclImdb/train/labeledBow.feat","r")
@@ -138,7 +138,6 @@ reviews = trainDataVocab.readlines()
 
 trainVectors = []
 generateVectors(reviews,n,m)
-print(trainVectors[0])
 
 id3tree = trainDataId3(trainVectors,1)
 print(id3tree[1])
