@@ -21,19 +21,18 @@ def categoriseVectors(vectors):
 
     category = vectors[0].get('clf')
     for i in range(1,len(vectors)):
-        if(category!=vectors[i].get('clf')):
+        if(vectors[i].get('clf')!=category):
             return False
         if(i==(0.9)*len(vectors)):
             return True
 
 def mostFrequentCategory(vectors):
-
     pos_counter = 0
     neg_counter = 0
     for vector in vectors:
-        if(vector.get('clf')==1):
+        if(vector.get('clf')==True):
             pos_counter+=1
-        elif(vector.get('clf')==0):
+        elif(vector.get('clf')==False):
             neg_counter+=1
     if(pos_counter>=neg_counter):
         return True
@@ -52,11 +51,7 @@ def calculateCondProbability(vectors,x,value,C):
                 score_appearances+=1
     if(total_appearances>0):
         current_probability = score_appearances/total_appearances
-    else:
-        current_probability = 0.001
-    if(current_probability<=0):
-        current_probability = 0.001
-    return current_probability*np.log2(current_probability)
+    return current_probability*np.log2(current_probability+1)
         
 def calculateCondEntropy(vectors,x,value):
     pos_review_entropy = calculateCondProbability(vectors,x,value,1)
@@ -81,14 +76,11 @@ def calculateInfoGain(vectors,x):
     pos_review_perc = pos_reviews/len(vectors)
     neg_review_perc = neg_reviews/len(vectors)
     #Calculating entropy
-    if(pos_review_perc==0):
-        pos_review_perc=0.001
-    elif(neg_review_perc==0):
-        neg_review_perc=0.001
-    entropy = -pos_review_perc*np.log2(pos_review_perc) - neg_review_perc*np.log2(neg_review_perc)
+    entropy = -pos_review_perc*np.log2(pos_review_perc+1) - neg_review_perc*np.log2(neg_review_perc+1)
     #Probability of finding and not finding the attribute in a review
     attr_probability = attr_appearances/len(vectors)
-    return (entropy - attr_probability*calculateCondEntropy(vectors,x,1) - (1-attr_probability)*calculateCondEntropy(vectors,x,0))
+    info_gain = (entropy - attr_probability*calculateCondEntropy(vectors,x,1) - (1-attr_probability)*calculateCondEntropy(vectors,x,0))
+    return info_gain
 
 def bestAttributeSelection(vectors):
 
@@ -104,15 +96,15 @@ def bestAttributeSelection(vectors):
     return max_attribute
 
 def trainDataId3(vectors,freq_category):
+
     tree=[]
     if(len(vectors)==0):
         return freq_category
     if(categoriseVectors(vectors)):
         return  vectors[0].get('clf')
-    if(len(vectors[0])<=1):
+    if(len(vectors[0])==1):
         return mostFrequentCategory(vectors)
     best_attr = bestAttributeSelection(vectors) 
-    #print('Vocab @:',highestIGAttr)
     tree.append(best_attr)
     left_vectors = []
     right_vectors = []
@@ -126,43 +118,49 @@ def trainDataId3(vectors,freq_category):
                 right_vectors.append(vector)
             vectors.remove(vector)
     left_tree = trainDataId3(left_vectors,category)
-    tree.append(left_tree)
     right_tree = trainDataId3(right_vectors,category)
+    tree.append(left_tree)
     tree.append(right_tree)
     return tree
         
 #The first "n-1" words in the vocabulary will be skipped
-n = 70
+n = 40
 #Every word after "m+n" won't be checked.
-m = 20
-entropy = -0.5*np.log2(0.5) - 0.5*np.log2(0.5)
+m = 50
 
-trainData = open("aclImdb/train/labeledBow.feat","r")
-reviews = trainData.readlines()
-trainVectors = generateVectors(reviews,n,m)
-id3tree = trainDataId3(trainVectors,True)
+train_data = open("aclImdb/train/labeledBow.feat","r")
+train_vectors = generateVectors(train_data.readlines(),n,m)
+id3_tree = trainDataId3(train_vectors,True)
+print(id3_tree)
 
-testData = open("aclImdb/test/labeledBow.feat","r")
-tests = generateVectors(testData.readlines(),n,m)
-
-print(id3tree)
-
-accuracy = 200
+test_data = open("aclImdb/test/labeledBow.feat","r")
+tests = generateVectors(test_data.readlines(),n,m)
+pos = neg =0
+accuracy = 0
 for test in tests:
-    node = id3tree
-    nodeKey = test.get(node[0])
+    node = id3_tree
+    node_key = test.get(node[0])
     score = test.get('clf')
     while(True):
-        if(nodeKey==1):
+        if(node_key==1):
             node = node[1]
-            nodeKey = test.get(node[0])
-        elif(nodeKey==0):
+            if(node!=True and node!=False):
+                node_key = test.get(node[0])
+        elif(node_key==0):
             node = node[2]
-            nodeKey = test.get(node[0])
-        if(nodeKey==True or nodeKey==False):
-            if(nodeKey==score):
+            if(node!=True and node!=False):
+                node_key = test.get(node[0])
+        if(node_key==True or node_key==False):
+            if(node_key==score):
                 accuracy+=1
+            if(node_key==True):
+                pos+=1
+            else:
+                neg+=1
             break
     
-
 print(accuracy/250,"%")
+print(pos)
+print(neg)
+
+        
