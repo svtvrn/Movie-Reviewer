@@ -1,20 +1,21 @@
 import numpy as np
 
 def generateVectors(reviews,n,m):
-
+    vectors = []
     for review in reviews:
         reviewVector = {}
         score = int(review.split()[0])
         if(score>6):
-            reviewVector.update({'clf': 1})
+            reviewVector.update({'clf': True})
         else:
-            reviewVector.update({'clf': 0})
+            reviewVector.update({'clf': False})
         for i in range(n,m+n):
             if(" "+str(i)+":" in review):
                 reviewVector [i] = 1
             else:
                 reviewVector [i] = 0
-        trainVectors.append(reviewVector)
+        vectors.append(reviewVector)
+    return vectors
 
 def categoriseVectors(vectors):
 
@@ -34,9 +35,9 @@ def mostFrequentCategory(vectors):
         elif(vector.get('clf')==0):
             negCounter+=1
     if(posCounter>=negCounter):
-        return 1
+        return True
     else:
-        return 0
+        return False
 
 def calculateCondProbability(vectors,x,value,C):
     currentProbability = 0
@@ -88,7 +89,6 @@ def bestAttributeSelection(vectors):
 
     attributes = list(vectors[0].keys())
     attributes.remove("clf")
-
     maxAttribute = 0
     maxInfoGain  = 0
     for x in attributes:
@@ -98,16 +98,16 @@ def bestAttributeSelection(vectors):
             maxAttribute = x
     return maxAttribute
 
-def trainDataId3(vectors,defaultCategory):
+def trainDataId3(vectors,freqCategory):
     tree=[]
     if(len(vectors)==0):
-        return defaultCategory
+        return freqCategory
     if(categoriseVectors(vectors)):
         return  vectors[0].get('clf')
-    if(len(vectors[0])==1):
+    if(len(vectors[0])<=1):
         return mostFrequentCategory(vectors)
     highestIGAttr = bestAttributeSelection(vectors) 
-    print('Vocab @:',highestIGAttr)
+    #print('Vocab @:',highestIGAttr)
     tree.append(highestIGAttr)
     leftVectors = []
     rightVectors = []
@@ -120,7 +120,6 @@ def trainDataId3(vectors,defaultCategory):
             else:
                 rightVectors.append(vector)
             vectors.remove(vector)
-
     leftTree = trainDataId3(leftVectors,category)
     tree.append(leftTree)
     rightTree = trainDataId3(rightVectors,category)
@@ -128,18 +127,41 @@ def trainDataId3(vectors,defaultCategory):
     return tree
         
 #The first "n-1" words in the vocabulary will be skipped
-n = 40
+n = 1000
 #Every word after "m+n" won't be checked.
-m = 50
+m = 10
 entropy = -0.5*np.log2(0.5) - 0.5*np.log2(0.5)
 
-trainDataVocab = open("aclImdb/train/labeledBow.feat","r")
-reviews = trainDataVocab.readlines()
+trainData = open("aclImdb/train/labeledBow.feat","r")
+reviews = trainData.readlines()
+trainVectors = generateVectors(reviews,n,m)
+id3tree = trainDataId3(trainVectors,True)
 
-trainVectors = []
-generateVectors(reviews,n,m)
+testData = open("aclImdb/test/labeledBow.feat","r")
+tests = generateVectors(testData.readlines(),n,m)
 
-id3tree = trainDataId3(trainVectors,1)
-print(id3tree[1])
-print("\n")
-print(id3tree[2])
+print(id3tree)
+
+accuracy = 0
+for test in tests:
+
+    node = id3tree
+    nodeKey = test.get(node[0])
+    value = 0
+    score = test.get('clf')
+    depth = 1
+    while(True):
+        if(value==1):
+            node = node[1]
+            nodeKey = test.get(node[0])
+        elif(value==0):
+            node = node[2]
+            nodeKey = test.get(node[0])
+        if(nodeKey==True or nodeKey==False):
+            value = nodeKey
+            break
+        depth+=1
+    if(value==score):
+        accuracy+=1
+
+print(accuracy/250,"%")
