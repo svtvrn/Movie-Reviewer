@@ -23,7 +23,7 @@ def categoriseVectors(vectors):
         for i in range(1,len(vectors)):
             if(vectors[i].get('clf')!=category):
                 return False
-            if(i==(0.9)*len(vectors)):
+            if(i==(0.95)*len(vectors)):
                 return True
     else:
         return False
@@ -118,11 +118,40 @@ def trainDataId3(vectors,freq_category):
             sub_tree = trainDataId3(sub_vectors,freq_category)
             tree.append(sub_tree)
         return tree
-        
+
+def traverse(test,node):
+    if(node==True or node==False):
+        print(node)
+        return node
+    else:
+        answer = test.get(node[0])
+        print('Attr: ',node[0],'Direction: ',answer)
+        if(answer==1):
+            return traverse(test,node[1])
+        elif(answer==0):
+            return traverse(test,node[2])
+
+def test(tests,root):
+    accuracy = 0
+    pos=0
+    neg=0
+    for test in tests:
+        clf = traverse(test,root)
+        if(clf == test.get('clf')):
+            accuracy+=1
+            if(clf==True):
+                pos+=1
+            else:
+                neg+=1
+        quit()
+    print(pos," ",neg)
+    print(accuracy/len(tests)*100,"%")
+
+
 #The first "n-1" words in the vocabulary will be skipped
-n = 80 
+n = 60
 #Every word after "m+n" won't be checked.
-m = 50
+m = 4
 
 train_data = open("aclImdb/train/labeledBow.feat","r")
 train_vectors = generateVectors(train_data.readlines(),n,m)
@@ -131,36 +160,4 @@ print(id3_tree)
 
 test_data = open("aclImdb/test/labeledBow.feat","r")
 tests = generateVectors(test_data.readlines(),n,m)
-pos = neg =0
-accuracy = 0
-
-
-
-for test in tests:
-    node = id3_tree
-    node_key = test.get(node[0])
-    score = test.get('clf')
-    while(True):
-        if(node_key==1):
-            node = node[1]
-            if(node!=True and node!=False):
-                node_key = test.get(node[0])
-                print(node_key)
-        elif(node_key==0):
-            node = node[2]
-            if(node!=True and node!=False):
-                node_key = test.get(node[0])
-                print(node_key)
-        if(node_key==True or node_key==False):
-            print(node_key)
-            if(node_key==score):
-                accuracy+=1
-                if(node_key==True):
-                    pos+=1
-                else:
-                    neg+=1
-            quit()
-    
-print(accuracy/250,"%")
-print(pos)
-print(neg)
+test(tests,id3_tree)
