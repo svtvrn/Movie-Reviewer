@@ -22,7 +22,7 @@ def categoriseVectors(vectors):
     for i in range(1,len(vectors)):
         if(vectors[i].get('clf')!=category):
             return False
-        if(i==(0.6)*len(vectors)):
+        if(i==(1)*len(vectors)):
             return True
 
 def mostFrequentCategory(vectors):
@@ -75,7 +75,7 @@ def calculateInfoGain(vectors,x):
     entropy = -pos_review_perc*np.log2(pos_review_perc+1) - neg_review_perc*np.log2(neg_review_perc+1)
     #Probability of finding and not finding the attribute in a review
     attr_probability = attr_appearances/len(vectors)
-    info_gain = (entropy - attr_probability*calculateCondEntropy(vectors,x,1) - (1-attr_probability)*calculateCondEntropy(vectors,x,0))
+    info_gain = ( entropy - attr_probability*calculateCondEntropy(vectors,x,1) - (1-attr_probability)*calculateCondEntropy(vectors,x,0))
     return info_gain
 
 def bestAttributeSelection(vectors):
@@ -91,15 +91,12 @@ def bestAttributeSelection(vectors):
             max_attribute = x
     return max_attribute
 
-def trainDataId3(vectors,depth,freq_category):
+def trainDataId3(vectors,freq_category):
     tree=[]
-    
     if(len(vectors)==0):
         return freq_category    
     elif(categoriseVectors(vectors)):
         return vectors[0].get('clf')
-    elif (depth==0):
-        return mostFrequentCategory(vectors)
     else:
         best_attr = bestAttributeSelection(vectors)
         if(best_attr==0):
@@ -114,17 +111,17 @@ def trainDataId3(vectors,depth,freq_category):
                 if(attr_val==value):
                     sub_vectors.append(vector)
                 vectors.remove(vector)
-            sub_tree = trainDataId3(sub_vectors,depth-1,freq_category)
+            sub_tree = trainDataId3(sub_vectors,freq_category)
             tree.append(sub_tree)
         return tree
 
 def traverse(test,node):
     if(node==True or node==False):
-        print(node)
+        #print(node)
         return node
     else:
         answer = test.get(node[0])
-        print('Node: ',node,'Attr: ',node[0],'Direction: ',answer)
+        #print('Node: ',node,'Attr: ',node[0],'Direction: ',answer)
         if(answer==1):
             return traverse(test,node[1])
         elif(answer==0):
@@ -142,20 +139,19 @@ def run_tests(tests,root):
                 pos+=1
             else:
                 neg+=1
-        quit()
-    #print(pos," ",neg)
+        #quit()
+    print(pos," ",neg)
     print(accuracy/len(tests)*100,"%")
 
 #The first "n-1" words in the vocabulary will be skipped
 n = 60
 #Every word after "m+n" won't be checked.
 m = 60
-depth = 5
 
 train_data = open("aclImdb/train/labeledBow.feat","r")
 train_vectors = generateVectors(train_data.readlines(),n,m)
-id3_tree = trainDataId3(train_vectors,depth,True)
-#print(id3_tree)
+id3_tree = trainDataId3(train_vectors,True)
+
 test_data = open("aclImdb/test/labeledBow.feat","r")
 tests = generateVectors(test_data.readlines(),n,m)
 run_tests(tests,id3_tree)
