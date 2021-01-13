@@ -17,14 +17,14 @@ def generateVectors(reviews,n,m):
         vectors.append(reviewVector)
     return vectors
 
-def categoriseVectors(vectors):
+def check_categories(vectors):
     category = vectors[0].get('clf')
     for i in range(1,len(vectors)):
         if(vectors[i].get('clf')!=category):
             return False
     return True
 
-def mostFrequentCategory(vectors):
+def most_frequent(vectors):
     pos_counter = 0
     neg_counter = 0
     for vector in vectors:
@@ -77,42 +77,52 @@ def calculateInfoGain(vectors,x):
     info_gain = ( entropy - attr_probability*calculateCondEntropy(vectors,x,1) - (1-attr_probability)*calculateCondEntropy(vectors,x,0))
     return info_gain
 
-def bestAttributeSelection(vectors):
-
-    attributes = list(vectors[0].keys())
-    attributes.remove("clf")
+def bestAttributeSelection(vectors,attributes):
+    if(len(attributes)==1):
+        return attributes[0]
     max_attribute = 0
     max_info_gain  = 0
     for x in attributes:
         info_gain = calculateInfoGain(vectors,x)
-        if(info_gain>max_info_gain):
+        if(info_gain>=max_info_gain):
             max_info_gain = info_gain
             max_attribute = x
     return max_attribute
 
-def trainDataId3(vectors,freq_category):
-    tree=[]
+def trainDataId3(vectors,attributes,freq_category):
     if(len(vectors)==0):
-        return freq_category    
-    elif(categoriseVectors(vectors)):
+        return freq_category
+    elif(check_categories(vectors)):
         return vectors[0].get('clf')
+    elif(len(attributes)==0):
+        return most_frequent(vectors)
     else:
-        best_attr = bestAttributeSelection(vectors)
-        if(best_attr==0):
-            return mostFrequentCategory(vectors)
+        best_attr = bestAttributeSelection(vectors,attributes)
+        attributes.remove(best_attr)
+        root = [best_attr]
+        m = most_frequent(vectors)
+        left_vect = []
+        right_vect = []
+        for vector in vectors:
+            attr = vector.pop(best_attr)
+            if(attr==1):
+                left_vect.append(vector)
+            else: 
+                right_vect.append(vector)
+            #vectors.remove(vector)
+        if len(left_vect)>len(right_vect):
+            right_tree = trainDataId3(right_vect,attributes,m)
+            root.append(right_tree)
+            left_tree = trainDataId3(left_vect,attributes,m)
+            root.append(left_tree)
+            
         else:
-            freq_category = mostFrequentCategory(vectors)
-        tree.append(best_attr)
-        for value in range(2):
-            sub_vectors = []
-            for vector in vectors:
-                attr_val = vector.pop(best_attr)
-                if(attr_val==value):
-                    sub_vectors.append(vector)
-                vectors.remove(vector)
-            sub_tree = trainDataId3(sub_vectors,freq_category)
-            tree.append(sub_tree)
-        return tree
+            left_tree = trainDataId3(left_vect,attributes,m)
+            root.append(left_tree)
+            right_tree = trainDataId3(right_vect,attributes,m)
+            root.append(right_tree)
+       
+        return root
 
 def traverse(test,node):
     if(node==True or node==False):
@@ -143,15 +153,16 @@ def run_tests(tests,root):
     print(accuracy/len(tests)*100,"%")
 
 #The first "n-1" words in the vocabulary will be skipped
-n = 80
+n = 60
 #Every word after "m+n" won't be checked.
-m = 55
+m = 60
 
 train_data = open("aclImdb/train/labeledBow.feat","r")
 train_vectors = generateVectors(train_data.readlines(),n,m)
 attributes = list(train_vectors[0].keys())
 attributes.remove("clf")
-id3_tree = trainDataId3(train_vectors,True)
+
+id3_tree = trainDataId3(train_vectors,attributes,True)
 
 test_data = open("aclImdb/test/labeledBow.feat","r")
 tests = generateVectors(test_data.readlines(),n,m)

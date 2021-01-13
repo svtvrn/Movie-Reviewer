@@ -72,7 +72,7 @@ def adaboost(samples,iterations):
 #The first "n-1" words in the vocabulary will be skipped
 n = 60
 #Every word after "m+n" won't be checked.
-m = 20
+m = 55
 #Number of iterations Adaboost will perfrom
 iterations = 100
 
