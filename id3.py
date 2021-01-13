@@ -89,8 +89,10 @@ def bestAttributeSelection(vectors,attributes):
             max_attribute = x
     return max_attribute
 
-def trainDataId3(vectors,attributes,freq_category):
-    if(len(vectors)==0):
+def trainDataId3(vectors,attributes,depth,freq_category):
+    if(depth==0):
+        return freq_category
+    elif(len(vectors)==0):
         return freq_category
     elif(check_categories(vectors)):
         return vectors[0].get('clf')
@@ -109,28 +111,21 @@ def trainDataId3(vectors,attributes,freq_category):
                 left_vect.append(vector)
             else: 
                 right_vect.append(vector)
-            #vectors.remove(vector)
-        if len(left_vect)>len(right_vect):
-            right_tree = trainDataId3(right_vect,attributes,m)
-            root.append(right_tree)
-            left_tree = trainDataId3(left_vect,attributes,m)
-            root.append(left_tree)
-            
-        else:
-            left_tree = trainDataId3(left_vect,attributes,m)
-            root.append(left_tree)
-            right_tree = trainDataId3(right_vect,attributes,m)
-            root.append(right_tree)
+
+        left_tree = trainDataId3(left_vect,attributes,depth-1,m)
+        root.append(left_tree)
+        right_tree = trainDataId3(right_vect,attributes,depth-1,m)
+        root.append(right_tree)
        
         return root
 
 def traverse(test,node):
     if(node==True or node==False):
-        #print(node)
+        print(node)
         return node
     else:
         answer = test.get(node[0])
-        #print('Node: ',node,'Attr: ',node[0],'Direction: ',answer)
+        print('Node: ',node,'Attr: ',node[0],'Direction: ',answer)
         if(answer==1):
             return traverse(test,node[1])
         elif(answer==0):
@@ -156,13 +151,14 @@ def run_tests(tests,root):
 n = 60
 #Every word after "m+n" won't be checked.
 m = 60
+depth = 5
 
 train_data = open("aclImdb/train/labeledBow.feat","r")
 train_vectors = generateVectors(train_data.readlines(),n,m)
 attributes = list(train_vectors[0].keys())
 attributes.remove("clf")
 
-id3_tree = trainDataId3(train_vectors,attributes,True)
+id3_tree = trainDataId3(train_vectors,attributes,depth,True)
 
 test_data = open("aclImdb/test/labeledBow.feat","r")
 tests = generateVectors(test_data.readlines(),n,m)
