@@ -22,8 +22,7 @@ def categoriseVectors(vectors):
     for i in range(1,len(vectors)):
         if(vectors[i].get('clf')!=category):
             return False
-        if(i==(1)*len(vectors)):
-            return True
+    return True
 
 def mostFrequentCategory(vectors):
     pos_counter = 0
@@ -144,12 +143,14 @@ def run_tests(tests,root):
     print(accuracy/len(tests)*100,"%")
 
 #The first "n-1" words in the vocabulary will be skipped
-n = 60
+n = 80
 #Every word after "m+n" won't be checked.
-m = 60
+m = 55
 
 train_data = open("aclImdb/train/labeledBow.feat","r")
 train_vectors = generateVectors(train_data.readlines(),n,m)
+attributes = list(train_vectors[0].keys())
+attributes.remove("clf")
 id3_tree = trainDataId3(train_vectors,True)
 
 test_data = open("aclImdb/test/labeledBow.feat","r")
