@@ -121,11 +121,11 @@ def trainDataId3(vectors,attributes,depth,freq_category):
 
 def traverse(test,node):
     if(node==True or node==False):
-        print(node)
+        #print(node)
         return node
     else:
         answer = test.get(node[0])
-        print('Node: ',node,'Attr: ',node[0],'Direction: ',answer)
+        #print('Node: ',node,'Attr: ',node[0],'Direction: ',answer)
         if(answer==1):
             return traverse(test,node[1])
         elif(answer==0):
