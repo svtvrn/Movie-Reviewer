@@ -148,10 +148,10 @@ def run_tests(tests,root):
     print(accuracy/len(tests)*100,"%")
 
 #The first "n-1" words in the vocabulary will be skipped
-n = 60
+n = 75
 #Every word after "m+n" won't be checked.
-m = 60
-depth = 5
+m = 400
+depth = 6
 
 train_data = open("aclImdb/train/labeledBow.feat","r")
 train_vectors = generateVectors(train_data.readlines(),n,m)
