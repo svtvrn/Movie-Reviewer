@@ -37,7 +37,6 @@ def gini(samples,attr):
 def weak_learner(samples,weights):
     min_gini = np.inf
     best_attr = 0 
-    clf = []
     for attr in len(samples[0][0]):
         gini = gini(samples,attr)
         if(gini<min_gini):
