@@ -47,7 +47,7 @@ def attr_entropy(vectors,x,value,C):
     if(total_appearances>0):
         current_probability = score_appearances/total_appearances
     return current_probability*np.log2(current_probability+1)
-        
+
 def calculate_entropy(vectors,x,value):
     pos_review_entropy = attr_entropy(vectors,x,value,1)
     neg_review_entropy = attr_entropy(vectors,x,value,0)
@@ -91,6 +91,7 @@ def select_best_attr(vectors,attributes):
     return max_attribute
 
 def train_id3(vectors,attributes,depth,freq_category):
+
     if(depth==0):
         return freq_category
     elif(len(vectors)==0):
@@ -119,7 +120,11 @@ def train_id3(vectors,attributes,depth,freq_category):
         return root
 
 def prune_nodes(root):
-    root[2][2][2] = False
+    root[1][2][2] = False
+    root[1][1][1][2] = False
+    root[1][1][2] = False
+    root[1][2][1][1] = False
+    root[2][2][1] = False
 
 
 #Traverses the ID3 decision tree.
@@ -154,7 +159,7 @@ def run_tests(tests,root):
     print(accuracy/len(tests)*100,"%")
 
 #The first "n-1" words in the vocabulary will be skipped.
-n = 60
+n = 75
 #Defines the number of attributes in a sample, starting with "n".
 m = 390
 #Defines the maximum depth of the tree.
@@ -168,7 +173,7 @@ attributes = list(train_vectors[0].keys())
 attributes.remove("clf")
 #Training algorithm
 id3_tree = train_id3(train_vectors,attributes,depth,True)
-
+prune_nodes(id3_tree)
 #Loading the testing data, converting them into a list of dictionaries. 
 test_data = open("aclImdb/test/labeledBow.feat","r")
 tests = generate_samples(test_data.readlines(),n,m)
