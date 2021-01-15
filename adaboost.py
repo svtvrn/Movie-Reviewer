@@ -1,14 +1,20 @@
 import numpy as np
+import random as rand
 
 class Stump:
 
     def __init__(self,root,left,right):
         self.root = root
-        self.left = None 
-        self.right = None
+        self.left = left 
+        self.right = right
     
     def check_sample(self,sample):
-        return sample[0][self.root]==1
+        decision = sample[0][self.root]
+        sample_clf = sample[1]
+        if(decision==1):
+            return self.left==sample_clf
+        else:
+            return self.right==sample_clf
 
 #Generating sample data in tuples
 def generate_samples(samples,n,m):
@@ -58,10 +64,17 @@ def calculate_ig(samples,x):
     #Number of positive and negative reviews.
     pos_reviews = 0
     neg_reviews = 0
+    #Determines the
+    pos_has_attr=0
+    neg_has_attr=0
     #For each review:
     for sample in samples:
         if(sample[0][x]==1):
             attr_appearances+=1
+            if(sample[1]==1):
+                pos_has_attr+=1
+            else:
+                neg_has_attr+=1
         if(sample[1]==1):
             pos_reviews+=1
         else:
@@ -75,37 +88,41 @@ def calculate_ig(samples,x):
     attr_probability = attr_appearances/len(samples)
     #Calculating overall information gain.
     info_gain = ( entropy - attr_probability*calculate_entropy(samples,x,1) - (1-attr_probability)*calculate_entropy(samples,x,0))
-    return info_gain
+    return info_gain, pos_has_attr>neg_has_attr
 
 def weak_learner(samples,weights):
-    stump_clf = None
-    max_info_gain = np.inf
+
+    max_info_gain = -1
     best_attr = 0 
+    best__has_attr = None
     for attr in len(samples[0][0]):
-        info_gain = calculate_ig(samples,attr)
+        info_gain, has_attr = calculate_ig(samples,attr)
         if(info_gain>max_info_gain):
             max_info_gain = info_gain
             best_attr = attr
-    max_weight = -1
-    weight_idx = 0
-    for i in len(weights):
-        if(weights[i]>max_weight):
-            max_weight = weights[i]
-            weight_idx = i
-    sample_clf = samples[i][1]
-    sample_attr = samples[i][0][best_attr]
-    if(sample_attr==1):
-        return Stump(best_attr,sample_clf,not sample_attr)
-    else:
-        return Stump(best_attr,not sample_clf,sample_attr)
+            best__has_attr = has_attr
+    
+    return Stump(best_attr, best__has_attr, not best__has_attr)
 
-
+def repopulate_samples(samples,weights):
+    
+    for i in range(1,len(weights)):
+        weights[i] += weights[i-1]
+    new_samples = []
+    for i in range(len(samples)):
+        rand_gen = rand.uniform(0.0,1.0)    
+        for j in range(0,len(weights)):
+            if rand_gen<=weights[j]:
+                new_samples.append(samples[j])
+                break;
+    weights = [1/len(samples)]*len(samples)
+    return new_samples,weights
+    
 def weighted_majority(h,z):
     pass
 
 #Adaboost training function
 def adaboost(samples,iterations):
-
     #Number of total weights
     w = [1/len(samples)]*len(samples)
     #Number of hypotheses we've learned
@@ -113,13 +130,15 @@ def adaboost(samples,iterations):
     #The ammount of say for each hypothesis
     z = []
     for i in range (iterations):
+        if i!=0:
+            samples,w = repopulate_samples(samples,w)
         h[i] = weak_learner(samples,w)
         error = 0
         for j in range (len(samples)):
-            if h[i].check_sample(j) != samples[j][1]:
+            if not h[i].check_sample(samples[j]):
                 error += w[j]
         for j in range (len(samples)):
-            if h[i].check_sample(j) == samples[j][1]:
+            if h[i].check_sample(samples[j]):
                 w[j] *= error/(1-error)
         w = normalize(w)
         z[i] =  np.log2((1-error)/error)
