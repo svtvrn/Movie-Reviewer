@@ -2,10 +2,10 @@ import numpy as np
 
 class Stump:
 
-    def __init__(self,root):
+    def __init__(self,root,left,right):
         self.root = root
-        self.left = True
-        self.right = False
+        self.left = None 
+        self.right = None
     
     def check_sample(self,sample):
         return sample[0][self.root]==1
@@ -25,25 +25,80 @@ def generate_samples(samples,n,m):
         data.append(tuple)
     return data
 
-def gini(samples,attr):
-    sample_appearances = 0
+def normalize(weights):
+    weight_sum = 0
+    for weight in weights:
+        weight_sum += weight
+    for weight in weights:
+        weight /= weight_sum
+    return weights
+
+def attr_entropy(samples,x,value,C):
+    current_probability = 0
+    score_appearances = 0
+    total_appearances = 0
     for sample in samples:
-        if sample[1]==True and sample[0][attr]==1:
-            sample_appearances+=1
-    attr_prob = sample_appearances/len(samples)
-    gini = 1 - pow(attr_prob,2) - pow(1-attr_prob,2)
-    return gini
+        score = sample[1]
+        if(sample[0][x]==value):
+            total_appearances+=1
+            if(score==C):
+                score_appearances+=1
+    if(total_appearances>0):
+        current_probability = score_appearances/total_appearances
+    return current_probability*np.log2(current_probability+1)
+
+def calculate_entropy(samples,x,value):
+    pos_review_entropy = attr_entropy(samples,x,value,1)
+    neg_review_entropy = attr_entropy(samples,x,value,0)
+    return ( - pos_review_entropy - neg_review_entropy)
+
+def calculate_ig(samples,x):
+    #Number of attribute showing up in reviews.
+    attr_appearances = 0
+    #Number of positive and negative reviews.
+    pos_reviews = 0
+    neg_reviews = 0
+    #For each review:
+    for sample in samples:
+        if(sample[0][x]==1):
+            attr_appearances+=1
+        if(sample[1]==1):
+            pos_reviews+=1
+        else:
+            neg_reviews += 1
+    #Percentage of pos and neg reviews to calculate entropy.
+    pos_review_perc = pos_reviews/len(samples)
+    neg_review_perc = neg_reviews/len(samples)
+    #Calculating entropy
+    entropy = -pos_review_perc*np.log2(pos_review_perc+1) - neg_review_perc*np.log2(neg_review_perc+1)
+    #Probability of finding and not finding the attribute in a review.
+    attr_probability = attr_appearances/len(samples)
+    #Calculating overall information gain.
+    info_gain = ( entropy - attr_probability*calculate_entropy(samples,x,1) - (1-attr_probability)*calculate_entropy(samples,x,0))
+    return info_gain
 
 def weak_learner(samples,weights):
-    min_gini = np.inf
+    stump_clf = None
+    max_info_gain = np.inf
     best_attr = 0 
     for attr in len(samples[0][0]):
-        gini = gini(samples,attr)
-        if(gini<min_gini):
-            min_gini = gini
+        info_gain = calculate_ig(samples,attr)
+        if(info_gain>max_info_gain):
+            max_info_gain = info_gain
             best_attr = attr
-    clf = Stump(best_attr)
-    return clf
+    max_weight = -1
+    weight_idx = 0
+    for i in len(weights):
+        if(weights[i]>max_weight):
+            max_weight = weights[i]
+            weight_idx = i
+    sample_clf = samples[i][1]
+    sample_attr = samples[i][0][best_attr]
+    if(sample_attr==1):
+        return Stump(best_attr,sample_clf,not sample_attr)
+    else:
+        return Stump(best_attr,not sample_clf,sample_attr)
+
 
 def weighted_majority(h,z):
     pass
@@ -55,7 +110,7 @@ def adaboost(samples,iterations):
     w = [1/len(samples)]*len(samples)
     #Number of hypotheses we've learned
     h = []
-    #The weights corresponding to each hypothesis
+    #The ammount of say for each hypothesis
     z = []
     for i in range (iterations):
         h[i] = weak_learner(samples,w)
@@ -63,9 +118,11 @@ def adaboost(samples,iterations):
         for j in range (len(samples)):
             if h[i].check_sample(j) != samples[j][1]:
                 error += w[j]
-            else:
+        for j in range (len(samples)):
+            if h[i].check_sample(j) == samples[j][1]:
                 w[j] *= error/(1-error)
-        z[i] = np.log2((1-error)/error)
+        w = normalize(w)
+        z[i] =  np.log2((1-error)/error)
     return weighted_majority(h,z)
 
 #The first "n-1" words in the vocabulary will be skipped
