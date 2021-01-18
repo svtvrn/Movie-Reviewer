@@ -146,13 +146,8 @@ def traverse(test,node):
 def run_tests(tests,root):
     accuracy = 0
     true_pos=0; true_neg=0
-    total_pos=0; total_neg = 0
     false_pos = 0; false_neg = 0
     for test in tests:
-        if(test.get('clf')):
-            total_pos+=1
-        else:
-            total_neg+=1
         clf = traverse(test,root)
         if(clf == test.get('clf')):
             accuracy+=1

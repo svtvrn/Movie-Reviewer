@@ -45,6 +45,41 @@ def checkAccuracy(posReview,negReview,score):
         return True
     return False
 
+def run_tests(tests):
+
+    accuracy = 0
+    true_pos=0; true_neg=0
+    false_pos = 0; false_neg = 0
+
+    for test in tests:
+        testVector = []
+        score = int(test.split()[0])
+        for i in range(n,m+n):
+            if(" "+str(i)+":" in test):
+                testVector.append(1)
+            else:
+                testVector.append(0)
+        posReviewProbability = naiveBayes(testVector,posWordProbabilities)
+        negReviewProbability = naiveBayes(testVector,negWordProbabilities)
+        if(checkAccuracy(posReviewProbability,negReviewProbability,score)):
+            accuracy+=1
+            if(posReviewProbability>negReviewProbability):
+                true_pos+=1
+            else:
+                true_neg+=1
+        else:
+            if(posReviewProbability>negReviewProbability):
+                false_pos+=1
+            else:
+                false_neg+=1
+    precision = true_pos/(true_pos + false_pos)
+    recall = true_pos/(true_pos + false_neg)
+    f1 = 2*(recall*precision)/(recall+precision)
+    print('Precision: ', precision,)
+    print('Recall:', recall)
+    print('F1: ', f1)
+    print('Accuracy: ', accuracy/len(tests)*100,"%")
+
 #The first "n" words in the vocabulary will be skipped
 n = 75
 #Every word after "m+n" won't be checked.
@@ -62,8 +97,8 @@ negWordProbabilities = []
 
 #Filling up the two vectors with the review tokens
 generateVectors(reviews,n,m)
-trainPosVectors = rand.sample(trainPosVectors,1250)
-trainNegVectors = rand.sample(trainNegVectors,1250)
+trainPosVectors = rand.sample(trainPosVectors,12500)
+trainNegVectors = rand.sample(trainNegVectors,12500)
 trainData(trainPosVectors,posWordProbabilities,n,m)
 trainData(trainNegVectors,negWordProbabilities,n,m)
 
@@ -71,19 +106,4 @@ trainData(trainNegVectors,negWordProbabilities,n,m)
 testDataVocab = open("aclImdb/train/labeledBow.feat","r")
 testReviews = testDataVocab.readlines()
 testReviews = rand.sample(testReviews,3000)
-accuracy = 0
-
-for test in testReviews:
-    testVector = []
-    score = int(test.split()[0])
-    for i in range(n,m+n):
-        if(" "+str(i)+":" in test):
-            testVector.append(1)
-        else:
-            testVector.append(0)
-    posReviewProbability = naiveBayes(testVector,posWordProbabilities)
-    negReviewProbability = naiveBayes(testVector,negWordProbabilities)
-    if(checkAccuracy(posReviewProbability,negReviewProbability,score)):
-        accuracy+=1
-
-print(accuracy/250,"%")
+run_tests(testReviews)
