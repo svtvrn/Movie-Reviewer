@@ -136,10 +136,9 @@ def traverse(test,node):
 #Runs traverse for each test sample and computes the program's accuracy,
 #as well as the number of positive/negative reviews it guessed correctly.
 def run_tests(tests,forest):
-
-    accuracy=0
-    pos=0
-    neg=0
+    accuracy = 0
+    true_pos=0; true_neg=0
+    false_pos = 0; false_neg = 0
     for test in tests:
         tree_predictions = []
         for tree in forest:
@@ -152,16 +151,25 @@ def run_tests(tests,forest):
             else:
                 neg_pred+=1
         final_prediction = pos_pred>neg_pred
-        if(final_prediction==test.get('clf')):
+        if (final_prediction==test.get('clf')):
             accuracy+=1
-            if(final_prediction):
-                pos+=1
+            if (final_prediction):
+                true_pos+=1
             else:
-                neg+=1
-
-    print(pos," ",neg)
-    print(len(tests))
-    print(accuracy/len(tests)*100,"%")
+                true_neg+=1
+        else:
+            if (final_prediction):
+                false_pos+=1
+            else:
+                false_neg+=1
+        #quit()
+    precision = true_pos/(true_pos + false_pos)
+    recall = true_pos/(true_pos + false_neg)
+    f1 = 2*(recall*precision)/(recall+precision)
+    print('Precision: ', precision,)
+    print('Recall:', recall)
+    print('F1: ', f1)
+    print('Accuracy: ', accuracy/len(tests)*100,"%")
 
 
 forest_range =(75,465)
@@ -176,10 +184,9 @@ train_data = open("aclImdb/train/labeledBow.feat","r")
 #Loading the vectors, shuffling them and choosing 1000 of them.
 
 for i in range(30):
-
     train_vectors = generate_samples(train_data.readlines(),forest_range[0],forest_range[1])
     rand.shuffle(train_vectors)
-    train_vectors = train_vectors[0:4000]
+    train_vectors = train_vectors[0:1200]
     #Attribute list, contains the dictionary keys.
     attributes = rand.sample(range(forest_range[0],forest_range[1]),m)
     #Training algorithm
@@ -189,6 +196,7 @@ for i in range(30):
 
 print("Training complete. \n")
 #Loading the testing data, converting them into a list of dictionaries. 
-test_data = open("aclImdb/train/labeledBow.feat","r")
+test_data = open("aclImdb/test/labeledBow.feat","r")
 tests = generate_samples(test_data.readlines(),forest_range[0],forest_range[1])
+tests = rand.sample(tests,3000)
 run_tests(tests,random_forest)
