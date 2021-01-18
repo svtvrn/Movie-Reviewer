@@ -1,4 +1,5 @@
 import numpy as np
+import random as rand
 
 def generate_samples(reviews,n,m):
     vectors = []
@@ -144,19 +145,34 @@ def traverse(test,node):
 #as well as the number of positive/negative reviews it guessed correctly.
 def run_tests(tests,root):
     accuracy = 0
-    pos=0
-    neg=0
+    true_pos=0; true_neg=0
+    total_pos=0; total_neg = 0
+    false_pos = 0; false_neg = 0
     for test in tests:
+        if(test.get('clf')):
+            total_pos+=1
+        else:
+            total_neg+=1
         clf = traverse(test,root)
         if(clf == test.get('clf')):
             accuracy+=1
             if(clf==True):
-                pos+=1
+                true_pos+=1
             else:
-                neg+=1
+                true_neg+=1
+        else:
+            if(clf):
+                false_pos+=1
+            else:
+                false_neg+=1
         #quit()
-    print(pos," ",neg)
-    print(accuracy/len(tests)*100,"%")
+    precision = true_pos/(true_pos + false_pos)
+    recall = true_pos/(true_pos + false_neg)
+    f1 = 2*(recall*precision)/(recall+precision)
+    print('Precision: ', precision,)
+    print('Recall:', recall)
+    print('F1: ', f1)
+    print('Accuracy: ', accuracy/len(tests)*100,"%")
 
 #The first "n-1" words in the vocabulary will be skipped.
 n = 75
@@ -168,14 +184,17 @@ depth = 6
 #Loading the training data, converting them into a list of dictionaries. 
 train_data = open("aclImdb/train/labeledBow.feat","r")
 train_vectors = generate_samples(train_data.readlines(),n,m)
+train_vectors = rand.sample(train_vectors,25000)
+print(len(train_vectors))
 #Attribute list, contains the dictionary keys.
 attributes = list(train_vectors[0].keys())
 attributes.remove("clf")
 #Training algorithm
 id3_tree = train_id3(train_vectors,attributes,depth,True)
-prune_nodes(id3_tree)
+#prune_nodes(id3_tree)
 #Loading the testing data, converting them into a list of dictionaries. 
 test_data = open("aclImdb/test/labeledBow.feat","r")
 tests = generate_samples(test_data.readlines(),n,m)
+dev_samples = rand.sample(tests,3000)
 #Tests the data
-run_tests(tests,id3_tree)
+run_tests(dev_samples,id3_tree)

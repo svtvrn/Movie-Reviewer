@@ -1,4 +1,4 @@
-import matplotlib as plt
+import random as rand
 
 def generateVectors(reviews,n,m):
 
@@ -62,13 +62,15 @@ negWordProbabilities = []
 
 #Filling up the two vectors with the review tokens
 generateVectors(reviews,n,m)
-print("Number of vocabulary words: ",len(trainPosVectors[0]))
+trainPosVectors = rand.sample(trainPosVectors,1250)
+trainNegVectors = rand.sample(trainNegVectors,1250)
 trainData(trainPosVectors,posWordProbabilities,n,m)
 trainData(trainNegVectors,negWordProbabilities,n,m)
 
 #TESTING
-testDataVocab = open("aclImdb/test/labeledBow.feat","r")
+testDataVocab = open("aclImdb/train/labeledBow.feat","r")
 testReviews = testDataVocab.readlines()
+testReviews = rand.sample(testReviews,3000)
 accuracy = 0
 
 for test in testReviews:

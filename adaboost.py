@@ -65,61 +65,47 @@ def normalize(weights):
         weights[i] /= weight_sum
     return weights
 
-def calculate_gini(samples,attr,weights):
+def calculate_gini(samples,attr):
     #Number of positive and negative reviews that have and don't have the attribute.
     pos_has_attr = 0
     neg_has_attr = 0
     pos_hasnt_attr = 0
     neg_hasnt_attr = 0
-    #Weighted indexes
-    w1 = 0
-    w2 = 0
-    w3 = 0
-    w4 = 0
-    pos_weight = 0
-    neg_weight = 0
-    total_weight = 0
+
     for i in  range (len(samples)):
         if(samples[i][1]==True):
             if(samples[i][0][attr]==1):
                 pos_has_attr+=1
-                w1+= weights[i]
             else:
                 pos_hasnt_attr+=1
-                w2+= weights[i]
-            pos_weight
         else:
             if(samples[i][0][attr]==1):
                 neg_has_attr+=1
-                w3+= weights[i]
             else:
                 neg_hasnt_attr+=1
-                w4+= weights[i]
-            neg_weight+= weights[i]
-        total_weight+= weights[i]
+
     pos_reviews = (pos_has_attr + pos_hasnt_attr)
     neg_reviews = (neg_has_attr + neg_hasnt_attr)
 
     pos_gini = 1 - pow((pos_has_attr+1)/(pos_reviews+2),2) - pow((pos_hasnt_attr+1)/(pos_reviews+2),2)
     neg_gini = 1 - pow((neg_has_attr+1)/(neg_reviews+2),2) - pow((neg_hasnt_attr+1)/(neg_reviews+2),2)
+    impurity = (pos_reviews/len(samples))*pos_gini + (neg_reviews/len(samples))*neg_gini
 
-    impurity = (pos_reviews/(total_weight*len(samples)))*pos_gini + (neg_reviews/(total_weight*len(samples)))*neg_gini
     return impurity, pos_has_attr>neg_has_attr
 
-def weak_learner(samples,weights):
+def weak_learner(samples):
 
-    mini_gini = np.inf
+    mini_gini = 999
     best_attr = 0 
-    best__has_attr = False
-    attributes = len(samples[0][0])
-    for attr in range(rand.randint(0,attributes)):
-        gini, has_attr = calculate_gini(samples,attr,weights)
+    best_has_attr = False
+    for attr in range(len(samples[0][0])):
+        gini, has_attr = calculate_gini(samples,attr)
         if(gini<mini_gini):
             mini_gini = gini
             best_attr = attr
-            best__has_attr = has_attr
+            best_has_attr = has_attr
 
-    return Stump(best_attr, best__has_attr, not best__has_attr)
+    return Stump(best_attr, best_has_attr, not best_has_attr)
 
 def repopulate_samples(samples,weights):
     weight_buckets = [weights[0]]
@@ -151,7 +137,7 @@ def adaboost(samples,iterations):
     for i in range (iterations):
         if i!=0:
             samples,w = repopulate_samples(samples,w)
-        stump = weak_learner(samples,w)
+        stump = weak_learner(samples)
         h.append(stump)
         h[i].print_stump()
         error = 0
@@ -191,17 +177,16 @@ def run_tests(adaboost,tests):
     print(accuracy/len(tests)*100,"%")
 
 #The first "n-1" words in the vocabulary will be skipped
-n = 60
+n = 75
 #Every word after "m+n" won't be checked.
 m = 100
 #Number of iterations Adaboost will perfrom
-iterations = 5
+iterations = 50
 
 train_data = open("aclImdb/train/labeledBow.feat","r")
 train_samples = generate_samples(train_data.readlines(),n,m)
 rand.shuffle(train_samples)  
-train_samples = rand.sample(range())
-print(len(train_samples))
+train_samples = train_samples[0:6000]
 
 adaboost_clf = adaboost(train_samples,iterations)
 test_data = open("aclImdb/test/labeledBow.feat","r")

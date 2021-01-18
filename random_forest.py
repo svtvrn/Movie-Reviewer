@@ -141,12 +141,12 @@ def run_tests(tests,forest):
     pos=0
     neg=0
     for test in tests:
-        forest_predictions = []
+        tree_predictions = []
         for tree in forest:
-             forest_predictions.append(traverse(test,tree))
+             tree_predictions.append(traverse(test,tree))
         pos_pred = 0
         neg_pred = 0
-        for prediction in forest_predictions:
+        for prediction in tree_predictions:
             if (prediction):
                 pos_pred+=1
             else:
@@ -164,18 +164,19 @@ def run_tests(tests,forest):
     print(accuracy/len(tests)*100,"%")
 
 
-forest_range =(75,365)
+forest_range =(75,465)
 #Defines the number of attributes in a sample.
 m = 100
 #Defines the maximum depth of a tree.
 depth = 6
-
+#Holds all the ID3 trees.
 random_forest = []
 #Loading the training data, converting them into a list of dictionaries. 
 train_data = open("aclImdb/train/labeledBow.feat","r")
+#Loading the vectors, shuffling them and choosing 1000 of them.
 
-for i in range(40):
-    #Loading the vetors, shuffling them and choosing 1000 of them.
+for i in range(30):
+
     train_vectors = generate_samples(train_data.readlines(),forest_range[0],forest_range[1])
     rand.shuffle(train_vectors)
     train_vectors = train_vectors[0:4000]
@@ -188,6 +189,6 @@ for i in range(40):
 
 print("Training complete. \n")
 #Loading the testing data, converting them into a list of dictionaries. 
-test_data = open("aclImdb/test/labeledBow.feat","r")
+test_data = open("aclImdb/train/labeledBow.feat","r")
 tests = generate_samples(test_data.readlines(),forest_range[0],forest_range[1])
 run_tests(tests,random_forest)
