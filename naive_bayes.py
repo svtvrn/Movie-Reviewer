@@ -97,8 +97,8 @@ negWordProbabilities = []
 
 #Filling up the two vectors with the review tokens
 generateVectors(reviews,n,m)
-trainPosVectors = trainPosVectors[0:12500]
-trainNegVectors = trainNegVectors[0:12500]
+trainPosVectors = trainPosVectors[0:2500]
+trainNegVectors = trainNegVectors[0:2500]
 trainData(trainPosVectors,posWordProbabilities,n,m)
 trainData(trainNegVectors,negWordProbabilities,n,m)
 
@@ -106,5 +106,5 @@ trainData(trainNegVectors,negWordProbabilities,n,m)
 testDataVocab = open("aclImdb/test/labeledBow.feat","r")
 testReviews = testDataVocab.readlines()
 testReviews = testReviews[0:1500] + testReviews [12500:14000]
-print('100%')
+print('20%')
 run_tests(testReviews)
