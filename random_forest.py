@@ -186,7 +186,7 @@ train_data = open("aclImdb/train/labeledBow.feat","r")
 for i in range(30):
     train_vectors = generate_samples(train_data.readlines(),forest_range[0],forest_range[1])
     rand.shuffle(train_vectors)
-    train_vectors = train_vectors[0:1200]
+    train_vectors = train_vectors[0:4000]
     #Attribute list, contains the dictionary keys.
     attributes = rand.sample(range(forest_range[0],forest_range[1]),m)
     #Training algorithm

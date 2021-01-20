@@ -136,6 +136,7 @@ def adaboost(samples,iterations):
     z = []
     for i in range (iterations):
         if i!=0:
+            quit()
             samples,w = repopulate_samples(samples,w)
         stump = weak_learner(samples)
         h.append(stump)
@@ -143,9 +144,11 @@ def adaboost(samples,iterations):
         error = 0
         #Calculating total error
         for j in range (len(samples)):
+            print(samples[j])
             if not h[i].check_sample(samples[j]):
                 error += w[j]
         #Adding the stump weight to the list
+        print(error)
         if error == 0.5:
             z.append(0)
         else:
@@ -179,14 +182,14 @@ def run_tests(adaboost,tests):
 #The first "n-1" words in the vocabulary will be skipped
 n = 75
 #Every word after "m+n" won't be checked.
-m = 100
+m = 6
 #Number of iterations Adaboost will perfrom
-iterations = 50
+iterations = 30
 
 train_data = open("aclImdb/train/labeledBow.feat","r")
 train_samples = generate_samples(train_data.readlines(),n,m)
 rand.shuffle(train_samples)  
-train_samples = train_samples[0:6000]
+train_samples = train_samples[0:10]
 
 adaboost_clf = adaboost(train_samples,iterations)
 test_data = open("aclImdb/test/labeledBow.feat","r")
