@@ -109,7 +109,7 @@ def train_id3(vectors,attributes,depth,freq_category):
         left_vectors = []
         right_vectors = []
         for vector in vectors:
-            attr = vector.pop(best_attr)
+            attr = vector.get(best_attr)
             if(attr==1):
                 left_vectors.append(vector)
             else: 
@@ -182,19 +182,17 @@ random_forest = []
 #Loading the training data, converting them into a list of dictionaries. 
 train_data = open("aclImdb/train/labeledBow.feat","r")
 #Loading the vectors, shuffling them and choosing 1000 of them.
-train_vectors = generate_samples(train_data.readlines(),forest_range[0],forest_range[1])
-rand.shuffle(train_vectors)
 print('10%')
 
 for i in range(30):
-    
-    dev_vectors = rand.choices(train_vectors,k=400)
+    train_vectors = generate_samples(train_data.readlines(),forest_range[0],forest_range[1])
+    train_vectors = rand.choices(train_vectors[0:12500],k=200) + rand.choices(train_vectors[12500:25000],k=200)
     #Attribute list, contains the dictionary keys.
     attributes = rand.sample(range(forest_range[0],forest_range[1]),m)
     #Training algorithm
-    id3_tree = train_id3(dev_vectors,attributes,depth,True)
+    id3_tree = train_id3(train_vectors,attributes,depth,True)
     random_forest.append(id3_tree)
-    #train_data.seek(0)
+    train_data.seek(0)
 
 print("Training complete. \n")
 #Loading the testing data, converting them into a list of dictionaries. 
