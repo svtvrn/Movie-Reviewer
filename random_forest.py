@@ -182,21 +182,20 @@ random_forest = []
 #Loading the training data, converting them into a list of dictionaries. 
 train_data = open("aclImdb/train/labeledBow.feat","r")
 #Loading the vectors, shuffling them and choosing 1000 of them.
-print('10%')
+train_vectors = generate_samples(train_data.readlines(),forest_range[0],forest_range[1])
 
 for i in range(30):
-    train_vectors = generate_samples(train_data.readlines(),forest_range[0],forest_range[1])
-    train_vectors = rand.choices(train_vectors[0:12500],k=200) + rand.choices(train_vectors[12500:25000],k=200)
+    
+    dev_data = rand.sample(train_vectors,12500)
     #Attribute list, contains the dictionary keys.
     attributes = rand.sample(range(forest_range[0],forest_range[1]),m)
     #Training algorithm
-    id3_tree = train_id3(train_vectors,attributes,depth,True)
+    id3_tree = train_id3(dev_data,attributes,depth,True)
     random_forest.append(id3_tree)
-    train_data.seek(0)
 
 print("Training complete. \n")
 #Loading the testing data, converting them into a list of dictionaries. 
 test_data = open("aclImdb/test/labeledBow.feat","r")
 tests = generate_samples(test_data.readlines(),forest_range[0],forest_range[1])
-dev_samples = tests[0:1500] + tests[12500:14000]
+dev_samples = tests[0:5000] + tests[12500:17500]
 run_tests(dev_samples,random_forest)
