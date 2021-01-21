@@ -157,19 +157,29 @@ def adaboost(samples,iterations):
 
 def run_tests(adaboost,tests):
     accuracy = 0
-    pos=0
-    neg=0
+    true_pos=0; true_neg=0
+    false_pos = 0; false_neg = 0
     for test in tests:
         clf = adaboost.test(test)
         if(clf == test[1]):
             accuracy+=1
             if(clf==True):
-                pos+=1
+                true_pos+=1
             else:
-                neg+=1
-        #quit()
-    print(pos," ",neg)
-    print(accuracy/len(tests)*100,"%")
+                true_neg+=1
+        else:
+            if(clf):
+                false_pos+=1
+            else:
+                false_neg+=1
+    precision = true_pos/(true_pos + false_pos)
+    recall = true_pos/(true_pos + false_neg)
+    f1 = 2*(recall*precision)/(recall+precision)
+    print('Precision: ', precision,)
+    print('Recall:', recall)
+    print('F1: ', f1)
+    print('Accuracy: ', accuracy/len(tests)*100,"%")
+
 
 #The first "n-1" words in the vocabulary will be skipped
 n = 75
@@ -181,11 +191,12 @@ iterations = 40
 #Loading the training data
 train_data = open("aclImdb/train/labeledBow.feat","r")
 train_samples = generate_samples(train_data.readlines(),n,m)
-train_samples = rand.sample(train_samples,10000)
-
+train_samples = train_samples[0:500] + train_samples[12500:13000]
+rand.shuffle(train_samples)
+print('10%')
 #Loading the test data
 adaboost_clf = adaboost(train_samples,iterations)
-test_data = open("aclImdb/test/labeledBow.feat","r")
+test_data = open("aclImdb/train/labeledBow.feat","r")
 test_samples = generate_samples(test_data.readlines(),n,m)
 test_samples = test_samples[0:1500] + test_samples[12500:14000]
 run_tests(adaboost_clf,test_samples)
