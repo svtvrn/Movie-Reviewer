@@ -172,11 +172,11 @@ n = 75
 #Every word after "m+n" won't be checked.
 m = 400
 #Number of iterations Adaboost will perfrom
-iterations = 50
+iterations = 25
 
 train_data = open("aclImdb/train/labeledBow.feat","r")
 train_samples = generate_samples(train_data.readlines(),n,m)
-train_samples = train_samples[0:4000] + train_samples[12500:16500]
+train_samples = train_samples[0:3000] + train_samples[12500:15500]
 
 adaboost_clf = adaboost(train_samples,iterations)
 test_data = open("aclImdb/test/labeledBow.feat","r")
