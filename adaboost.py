@@ -87,23 +87,29 @@ def calculate_gini(samples,attr):
 
 def weak_learner(samples):
 
-    min_gini = 999
+    min_gini = np.inf
     best_attr = 0 
     best_has_attr = False
+    #Calculating gini impurity for each  
+    #available attribute and chooosing  
+    #the one with the lowest one
     for attr in range(len(samples[0][0])):
         gini, has_attr = calculate_gini(samples,attr)
         if(gini<min_gini):
             min_gini = gini
             best_attr = attr
             best_has_attr = has_attr
-
+    #We create the decision stump based  
+    #on the best attribute selected
     return Stump(best_attr, best_has_attr, not best_has_attr)
 
 def repopulate_samples(samples,weights):
+    #Preparing the weight buckets for the sample distribution.
     weight_buckets = [weights[0]]
     for i in range(1,len(weights)):
         weight_buckets.append( weights[i] + weight_buckets[i-1] )
     new_samples = []
+    #Filling the sample data again.
     for i in range(len(samples)):
         rand_gen = rand.uniform(0.0,1.0)
         j=0    
@@ -112,42 +118,44 @@ def repopulate_samples(samples,weights):
                 new_samples.append(samples[j])
                 break;
             j+=1
+    #Balancing the sample weights.
     weights = [1/len(samples)]*len(samples)
     return new_samples,weights
     
 def weighted_majority(h,z):
     return AdaboostClf(h,z)
 
-#Adaboost training function
 def adaboost(samples,iterations):
     #Number of total weights
     w = [1/len(samples)]*len(samples)
-    #Number of hypotheses we've learned
+    #Number of hypotheses we've learned.
     h = []
-    #The ammount of say for each hypothesis
+    #The ammount of say for each hypothesis.
     z = []
     for i in range (iterations):
+        #After the first loop we have to keep repopulating the samples according to their weights.
         if i!=0:
             samples,w = repopulate_samples(samples,w)
         stump = weak_learner(samples)
         h.append(stump)
         error = 0
-        #Calculating total error
+        #Calculating total error from every sample.
         for j in range (len(samples)):
             if not h[i].check_sample(samples[j]):
                 error += w[j]
-        #Adding the stump weight to the list
-        if error == 0.5:
+        #We add the stump weight (amount of say) to the list, if the error is 0.5 then we don't take
+        #the stump into account.
+        if error == 0.5 :
             z.append(0)
         else:
-            z.append(0.5*np.log(((1-error)/(error+0.001))+1))
-        #Updating the sample weights
+            z.append(0.5*np.log(((1-error)/(error+0.0001))+1))
+        #Updating the sample weights based on the erros we made previously.
         for j in range (len(samples)):
             if h[i].check_sample(samples[j]):
                 w[j] *= np.exp(-z[i])
             else:
                 w[j] *= np.exp(z[i])
-        #Normalizing the sample weights
+        #Normalizing the sample weights so they add up to 1.
         w = normalize(w)        
     return weighted_majority(h,z)
 
@@ -172,12 +180,14 @@ n = 75
 #Every word after "m+n" won't be checked.
 m = 400
 #Number of iterations Adaboost will perfrom
-iterations = 25
+iterations = 30
 
+#Loading the training data
 train_data = open("aclImdb/train/labeledBow.feat","r")
 train_samples = generate_samples(train_data.readlines(),n,m)
 train_samples = train_samples[0:3000] + train_samples[12500:15500]
 
+#Loading the test data
 adaboost_clf = adaboost(train_samples,iterations)
 test_data = open("aclImdb/test/labeledBow.feat","r")
 test_samples = generate_samples(test_data.readlines(),n,m)
