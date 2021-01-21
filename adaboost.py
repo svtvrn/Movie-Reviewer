@@ -187,4 +187,5 @@ train_samples = rand.sample(train_samples,10000)
 adaboost_clf = adaboost(train_samples,iterations)
 test_data = open("aclImdb/test/labeledBow.feat","r")
 test_samples = generate_samples(test_data.readlines(),n,m)
+test_samples = test_samples[0:1500] + test_samples[12500:14000]
 run_tests(adaboost_clf,test_samples)
