@@ -3,11 +3,14 @@ import random as rand
 
 class Stump:
 
+    #Decision stump constructor, featuring a root
+    #with the attribute from the samples.
     def __init__(self,root,left,right):
         self.root = root
         self.left = left 
         self.right = right
     
+    #Checks if the stump predicted correctly.
     def check_sample(self,sample):
         decision = sample[0][self.root]
         sample_clf = sample[1]
@@ -16,6 +19,7 @@ class Stump:
         else:
             return self.right==sample_clf
 
+    #Stump print
     def print_stump(self):
         print('Root: ',self.root,' Left: ',self.left, ' Right: ',self.right)
 
@@ -40,7 +44,7 @@ class AdaboostClf:
                     is_positive+= self.z[i]
                 else:
                     is_negative+= self.z[i]
-        return is_positive>is_negative
+        return is_positive>=is_negative
 
 #Generating sample data in tuples
 def generate_samples(samples,n,m):
@@ -89,7 +93,7 @@ def weak_learner(samples):
 
     min_gini = np.inf
     best_attr = 0 
-    best_has_attr = False
+    best_has_attr = True
     #Calculating gini impurity for each  
     #available attribute and chooosing  
     #the one with the lowest one
@@ -108,16 +112,8 @@ def repopulate_samples(samples,weights):
     weight_buckets = [weights[0]]
     for i in range(1,len(weights)):
         weight_buckets.append( weights[i] + weight_buckets[i-1] )
-    new_samples = []
     #Filling the sample data again.
-    for i in range(len(samples)):
-        rand_gen = rand.uniform(0.0,1.0)
-        j=0    
-        while(True):
-            if rand_gen<=weight_buckets[j]:
-                new_samples.append(samples[j])
-                break;
-            j+=1
+    new_samples = rand.choices(samples, cum_weights = weight_buckets, k= len(samples))
     #Balancing the sample weights.
     weights = [1/len(samples)]*len(samples)
     return new_samples,weights
@@ -180,12 +176,12 @@ n = 75
 #Every word after "m+n" won't be checked.
 m = 400
 #Number of iterations Adaboost will perfrom
-iterations = 30
+iterations = 40
 
 #Loading the training data
 train_data = open("aclImdb/train/labeledBow.feat","r")
 train_samples = generate_samples(train_data.readlines(),n,m)
-train_samples = train_samples[0:3000] + train_samples[12500:15500]
+train_samples = rand.sample(train_samples,10000)
 
 #Loading the test data
 adaboost_clf = adaboost(train_samples,iterations)
