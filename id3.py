@@ -134,7 +134,6 @@ def prune_nodes(root):
     root[1][2][1][1] = False
     root[2][2][1] = False
 
-
 #Traverses the ID3 decision tree.
 def traverse(test,node):
     if(node==True or node==False):

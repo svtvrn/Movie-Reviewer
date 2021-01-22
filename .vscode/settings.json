@@ -1,4 +1,0 @@
-{
-    "python.pythonPath": "C:\\Users\\Nikos\\anaconda3\\python.exe",
-    "terminal.integrated.shellArgs.windows": ["/K", "C:\\Users\\Nikos\\anaconda3\\Scripts\\activate.bat C:\\Users\\Nikos\\anaconda3 & conda activate machine_learning"]
-}
