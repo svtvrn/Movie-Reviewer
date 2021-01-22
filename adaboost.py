@@ -32,6 +32,7 @@ class AdaboostClf:
     def test(self,sample):
         is_positive=0
         is_negative=0
+        threshold = 0.6
         for i in range(len(self.h)):
             answer = sample[0][self.h[i].root]
             if(answer==1):
@@ -44,6 +45,7 @@ class AdaboostClf:
                     is_positive+= self.z[i]
                 else:
                     is_negative+= self.z[i]
+            if()
         return is_positive>is_negative
 
 #Generating sample data in tuples
