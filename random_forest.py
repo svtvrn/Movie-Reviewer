@@ -19,11 +19,18 @@ def generate_samples(reviews,n,m):
     return vectors
 
 def check_categories(vectors):
-    category = vectors[0].get('clf')
-    for i in range(1,len(vectors)):
-        if(vectors[i].get('clf')!=category):
-            return False
-    return True
+    threshold = 0.9
+    neg = 0; pos =0
+    for i in range(0,len(vectors)):
+        if(vectors[i].get('clf')):
+            pos+=1
+        else:
+            neg+=1
+        if(pos>threshold*len(vectors)):
+            return True
+        elif(neg>threshold*len(vectors)):
+            return True
+    return False
 
 def most_frequent(vectors):
     pos_counter = 0
@@ -98,7 +105,7 @@ def train_id3(vectors,attributes,depth,freq_category):
     elif(len(vectors)==0):
         return freq_category
     elif(check_categories(vectors)):
-        return vectors[0].get('clf')
+        return most_frequent(vectors)
     elif(len(attributes)==0):
         return most_frequent(vectors)
     else:
@@ -185,15 +192,13 @@ train_data = open("aclImdb/train/labeledBow.feat","r")
 train_vectors = generate_samples(train_data.readlines(),forest_range[0],forest_range[1])
 
 for i in range(30):
-    
-    train = rand.choices(train_vectors,k=4000)
+    train = rand.choices(train_vectors[0:12500],k=800) + rand.choices(train_vectors[12500:25000],k=800)
     #Attribute list, contains the dictionary keys.
     attributes = rand.sample(range(forest_range[0],forest_range[1]),m)
     #Training algorithm
     id3_tree = train_id3(train,attributes,depth,True)
     random_forest.append(id3_tree)
 
-print("Training complete. \n")
 #Loading the testing data, converting them into a list of dictionaries. 
 test_data = open("aclImdb/test/labeledBow.feat","r")
 tests = generate_samples(test_data.readlines(),forest_range[0],forest_range[1])
