@@ -39,12 +39,12 @@ class AdaboostClf:
                     is_positive+= self.z[i]
                 else:
                     is_negative+= self.z[i]
-            else:
+            else:   
                 if(self.h[i].right):
                     is_positive+= self.z[i]
                 else:
                     is_negative+= self.z[i]
-        return is_positive>=is_negative
+        return is_positive>is_negative
 
 #Generating sample data in tuples
 def generate_samples(samples,n,m):
@@ -180,23 +180,20 @@ def run_tests(adaboost,tests):
     print('F1: ', f1)
     print('Accuracy: ', accuracy/len(tests)*100,"%")
 
-
 #The first "n-1" words in the vocabulary will be skipped
 n = 75
 #Every word after "m+n" won't be checked.
 m = 400
 #Number of iterations Adaboost will perfrom
-iterations = 40
+iterations = 30
 
 #Loading the training data
 train_data = open("aclImdb/train/labeledBow.feat","r")
 train_samples = generate_samples(train_data.readlines(),n,m)
-train_samples = train_samples[0:500] + train_samples[12500:13000]
-rand.shuffle(train_samples)
-print('10%')
+train_samples = rand.sample(train_samples,10000)
+
 #Loading the test data
 adaboost_clf = adaboost(train_samples,iterations)
-test_data = open("aclImdb/train/labeledBow.feat","r")
+test_data = open("aclImdb/test/labeledBow.feat","r")
 test_samples = generate_samples(test_data.readlines(),n,m)
-test_samples = test_samples[0:1500] + test_samples[12500:14000]
 run_tests(adaboost_clf,test_samples)

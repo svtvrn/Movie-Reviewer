@@ -186,16 +186,15 @@ train_vectors = generate_samples(train_data.readlines(),forest_range[0],forest_r
 
 for i in range(30):
     
-    dev_data = rand.sample(train_vectors,12500)
+    train = rand.choices(train_vectors,k=4000)
     #Attribute list, contains the dictionary keys.
     attributes = rand.sample(range(forest_range[0],forest_range[1]),m)
     #Training algorithm
-    id3_tree = train_id3(dev_data,attributes,depth,True)
+    id3_tree = train_id3(train,attributes,depth,True)
     random_forest.append(id3_tree)
 
 print("Training complete. \n")
 #Loading the testing data, converting them into a list of dictionaries. 
 test_data = open("aclImdb/test/labeledBow.feat","r")
 tests = generate_samples(test_data.readlines(),forest_range[0],forest_range[1])
-dev_samples = tests[0:5000] + tests[12500:17500]
-run_tests(dev_samples,random_forest)
+run_tests(tests,random_forest)

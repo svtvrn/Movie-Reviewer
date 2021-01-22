@@ -179,17 +179,14 @@ depth = 6
 #Loading the training data, converting them into a list of dictionaries. 
 train_data = open("aclImdb/train/labeledBow.feat","r")
 train_vectors = generate_samples(train_data.readlines(),n,m)
-train_vectors = train_vectors[0:12500] + train_vectors[12500:25000]
-print(len(train_vectors),'  100%')
 #Attribute list, contains the dictionary keys.
 attributes = list(train_vectors[0].keys())
 attributes.remove("clf")
 #Training algorithm
 id3_tree = train_id3(train_vectors,attributes,depth,True)
-#prune_nodes(id3_tree)
+prune_nodes(id3_tree)
 #Loading the testing data, converting them into a list of dictionaries. 
 test_data = open("aclImdb/test/labeledBow.feat","r")
 tests = generate_samples(test_data.readlines(),n,m)
-dev_samples = tests[0:1500] + tests[12500:14000]
 #Tests the data
-run_tests(dev_samples,id3_tree)
+run_tests(tests,id3_tree)
