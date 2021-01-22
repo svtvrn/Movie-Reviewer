@@ -45,7 +45,10 @@ class AdaboostClf:
                     is_positive+= self.z[i]
                 else:
                     is_negative+= self.z[i]
-            if()
+
+            if is_positive>threshold*len(self.h) or is_negative>threshold*len(self.h):
+                return is_positive>is_negative 
+
         return is_positive>is_negative
 
 #Generating sample data in tuples
@@ -192,10 +195,11 @@ iterations = 30
 #Loading the training data
 train_data = open("aclImdb/train/labeledBow.feat","r")
 train_samples = generate_samples(train_data.readlines(),n,m)
-train_samples = rand.sample(train_samples,10000)
+train_samples = train_samples[0:4000] + train_samples[12500:16500]
 
 #Loading the test data
 adaboost_clf = adaboost(train_samples,iterations)
 test_data = open("aclImdb/test/labeledBow.feat","r")
 test_samples = generate_samples(test_data.readlines(),n,m)
+test_samples  = test_samples[0:1500] + test_samples [12500:14000]
 run_tests(adaboost_clf,test_samples)
