@@ -32,7 +32,7 @@ class AdaboostClf:
     def test(self,sample):
         is_positive=0
         is_negative=0
-        threshold = 0.7
+        threshold = 0.8
         for i in range(len(self.h)):
             answer = sample[0][self.h[i].root]
             if(answer==1):
@@ -46,7 +46,7 @@ class AdaboostClf:
                 else:
                     is_negative+= self.z[i]
 
-            if is_positive>threshold*len(self.h) or is_negative>threshold*len(self.h):
+            if is_positive==threshold*len(self.h) or is_negative==threshold*len(self.h):
                 return is_positive>is_negative 
 
         return is_positive>is_negative

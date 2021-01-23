@@ -46,7 +46,7 @@ def checkAccuracy(posReview,negReview,score):
     return False
 
 def run_tests(tests):
-
+    threshold = 1
     accuracy = 0
     true_pos=0; true_neg=0
     false_pos = 0; false_neg = 0
@@ -61,6 +61,7 @@ def run_tests(tests):
                 testVector.append(0)
         posReviewProbability = naiveBayes(testVector,posWordProbabilities)
         negReviewProbability = naiveBayes(testVector,negWordProbabilities)
+        negReviewProbability *= threshold
         if(checkAccuracy(posReviewProbability,negReviewProbability,score)):
             accuracy+=1
             if(posReviewProbability>negReviewProbability):
