@@ -130,7 +130,7 @@ def weak_learner(samples):
     best_has_attr = True
     # Calculating gini impurity for each
     # available attribute and chooosing
-    # the one with the lowest one
+    # the one with the lowest one.
     for attr in range(len(samples[0][0])):
         gini, has_attr = calculate_gini(samples, attr)
         if(gini < min_gini):
@@ -138,7 +138,7 @@ def weak_learner(samples):
             best_attr = attr
             best_has_attr = has_attr
     # We create the decision stump based
-    # on the best attribute selected
+    # on the best attribute selected.
     return Stump(best_attr, best_has_attr, not best_has_attr)
 
 
@@ -203,18 +203,18 @@ def adaboost(samples, iterations):
 
 
 def run_tests(adaboost, tests):
-    # Counters used for metrics
+    # Counters used for metrics.
     accuracy = 0
     true_pos = 0
     true_neg = 0
     false_pos = 0
     false_neg = 0
-    # Running every test through the AdaBoost classifier
+    # Running every test through the AdaBoost classifier.
     for test in tests:
         clf = adaboost.test(test)
         if(clf == test[1]):
             accuracy += 1
-            if(clf == True):
+            if(clf):
                 true_pos += 1
             else:
                 true_neg += 1
@@ -223,7 +223,7 @@ def run_tests(adaboost, tests):
                 false_pos += 1
             else:
                 false_neg += 1
-    # Precision, recall, f1 and accuracy calculations
+    # Precision, recall, f1 and accuracy calculations.
     precision = true_pos/(true_pos + false_pos)
     recall = true_pos/(true_pos + false_neg)
     f1 = 2*(recall*precision)/(recall+precision)
@@ -237,18 +237,23 @@ def run_tests(adaboost, tests):
 n = 75
 # Every word after "m+n" won't be checked.
 m = 400
-# Number of iterations Adaboost will perfrom
+# Number of iterations Adaboost will perfrom.
 iterations = 30
 
-# Loading the training data
+print("Loading your data...")
+# Loading the training data.
 train_data = open("aclImdb/train/labeledBow.feat", "r")
 train_samples = generate_samples(train_data.readlines(), n, m)
 train_samples = rand.sample(train_samples, 10000)
+print("The model is being trained...")
 
-# Loading the test data
 adaboost_clf = adaboost(train_samples, iterations)
+print("Training complete!")
+print("Testing...\n")
+
+# Loading the test data.
 test_data = open("aclImdb/test/labeledBow.feat", "r")
 test_samples = generate_samples(test_data.readlines(), n, m)
-# Choosing a subset to run tests on
+# Choosing a subset to run tests on.
 test_samples = test_samples[0:1500] + test_samples[12500:14000]
 run_tests(adaboost_clf, test_samples)
