@@ -11,8 +11,8 @@ class Stump:
         self.left = left
         self.right = right
 
-    # Checks if the stump predicted correctly.
     def check_sample(self, sample):
+        # Checks if the stump predicted correctly.
         decision = sample[0][self.root]
         sample_clf = sample[1]
         if(decision == 1):
@@ -20,22 +20,27 @@ class Stump:
         else:
             return self.right == sample_clf
 
-    # Stump print
     def print_stump(self):
+        # Stump print.
         print('Root: ', self.root, ' Left: ',
               self.left, ' Right: ', self.right)
 
 
 class AdaboostClf:
 
+    # AdaBoost classifier constructor.
     def __init__(self, h, z):
         self.h = h
         self.z = z
 
     def test(self, sample):
+        #threshold = 0.8
         is_positive = 0
         is_negative = 0
-        threshold = 0.8
+        # Here we run the test through all the stumps
+        # we've created and we calculate the total opinion
+        # of wether the sample is a positive or a negative
+        # review. We return the opinion with the highest value.
         for i in range(len(self.h)):
             answer = sample[0][self.h[i].root]
             if(answer == 1):
@@ -49,16 +54,19 @@ class AdaboostClf:
                 else:
                     is_negative += self.z[i]
 
-            if is_positive == threshold*len(self.h) or is_negative == threshold*len(self.h):
-                return is_positive > is_negative
+            # if is_positive > threshold*len(self.h) or is_negative => threshold*len(self.h):
+                # return is_positive > is_negative
 
         return is_positive > is_negative
-
-# Generating sample data in tuples
 
 
 def generate_samples(samples, n, m):
     data = []
+    # Each review is turned into a tuple.
+    # The first element of the tuple is
+    # the vector consisting of all the
+    # attributes, and the second one is
+    # the review score.
     for sample in samples:
         sample_data = []
         score = int(sample.split()[0]) > 5
@@ -73,6 +81,7 @@ def generate_samples(samples, n, m):
 
 
 def normalize(weights):
+    # Normalizing the weights from 0 to 1.
     weight_sum = 0
     for weight in weights:
         weight_sum += weight
@@ -82,11 +91,14 @@ def normalize(weights):
 
 
 def calculate_gini(samples, attr):
-
+    # Helpful counters for calculating
+    # the feature's gini impurity.
     true_pos = 0
     false_pos = 0
     true_neg = 0
     false_neg = 0
+    # Here we check how well the selected
+    # attribute can classify our samples.
     for sample in samples:
         if(sample[0][attr] == 1):
             if(sample[1]):
@@ -98,6 +110,7 @@ def calculate_gini(samples, attr):
                 true_neg += 1
             else:
                 false_neg += 1
+    # Calculating the probabilities and the total gini impurity.
     pos_prob = 1 - pow((true_pos+1)/(true_pos+false_pos+2), 2) - \
         pow((false_pos+1)/(true_pos+false_pos+2), 2)
     neg_prob = 1 - pow((true_neg+1)/(true_neg+false_neg+2), 2) - \
@@ -105,6 +118,8 @@ def calculate_gini(samples, attr):
     impurity = (true_pos+false_pos)/(true_pos+false_pos+true_neg+false_neg) * \
         pos_prob + (true_neg+false_neg) / \
         (true_pos+false_pos+true_neg+false_neg)*neg_prob
+    # We return the gini impurity and how it
+    # classified the samples that had the feature.
     return impurity, true_pos > false_pos
 
 
@@ -141,20 +156,26 @@ def repopulate_samples(samples, weights):
 
 
 def weighted_majority(h, z):
+    # Constructs and returns the final classifier according
+    # to the total stumps we made and their weights.
     return AdaboostClf(h, z)
 
 
 def adaboost(samples, iterations):
-    # Number of total weights
+    # Number of total weights.
     w = [1/len(samples)]*len(samples)
     # Number of hypotheses we've learned.
     h = []
     # The ammount of say for each hypothesis.
     z = []
     for i in range(iterations):
-        # After the first loop we have to keep repopulating the samples according to their weights.
+        # After the first loop we have to keep repopulating
+        # the samples according to their weights.
         if i != 0:
             samples, w = repopulate_samples(samples, w)
+        # We create the new stump based on the best available
+        # attributes and their gini index. Afterwards we append
+        # the new stump with the rest of them.
         stump = weak_learner(samples)
         h.append(stump)
         error = 0
@@ -162,29 +183,33 @@ def adaboost(samples, iterations):
         for j in range(len(samples)):
             if not h[i].check_sample(samples[j]):
                 error += w[j]
-        # We add the stump weight (amount of say) to the list, if the error is 0.5 then we don't take
-        # the stump into account.
+        # We add the stump weight (amount of say) to the list,
+        # if the error is 0.5 then we don't take the stump into
+        # account by zeroing its amount of say.
         if error == 0.5:
             z.append(0)
         else:
             z.append(0.5*np.log(((1-error)/(error+0.0001))+1))
-        # Updating the sample weights based on the erros we made previously.
+        # Updating the sample weights based on the errors
+        # our base/weak learner made.
         for j in range(len(samples)):
             if h[i].check_sample(samples[j]):
                 w[j] *= np.exp(-z[i])
             else:
                 w[j] *= np.exp(z[i])
-        # Normalizing the sample weights so they add up to 1.
+        # Normalizing the sample weights so that they add up to 1.
         w = normalize(w)
     return weighted_majority(h, z)
 
 
 def run_tests(adaboost, tests):
+    # Counters used for metrics
     accuracy = 0
     true_pos = 0
     true_neg = 0
     false_pos = 0
     false_neg = 0
+    # Running every test through the AdaBoost classifier
     for test in tests:
         clf = adaboost.test(test)
         if(clf == test[1]):
@@ -198,6 +223,7 @@ def run_tests(adaboost, tests):
                 false_pos += 1
             else:
                 false_neg += 1
+    # Precision, recall, f1 and accuracy calculations
     precision = true_pos/(true_pos + false_pos)
     recall = true_pos/(true_pos + false_neg)
     f1 = 2*(recall*precision)/(recall+precision)
@@ -217,11 +243,12 @@ iterations = 30
 # Loading the training data
 train_data = open("aclImdb/train/labeledBow.feat", "r")
 train_samples = generate_samples(train_data.readlines(), n, m)
-train_samples = train_samples[0:4000] + train_samples[12500:16500]
+train_samples = rand.sample(train_samples, 10000)
 
 # Loading the test data
 adaboost_clf = adaboost(train_samples, iterations)
 test_data = open("aclImdb/test/labeledBow.feat", "r")
 test_samples = generate_samples(test_data.readlines(), n, m)
+# Choosing a subset to run tests on
 test_samples = test_samples[0:1500] + test_samples[12500:14000]
 run_tests(adaboost_clf, test_samples)
